@@ -97,7 +97,7 @@ button{font-family:inherit}
 
 /* ---------------- player ---------------- */
 .stage{background:#000;border-radius:var(--r);position:relative;overflow:hidden;aspect-ratio:16/9}
-.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
 .loadmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#C9CEEA;font-size:13px;text-align:center;padding:24px}
 .transport{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:12px}
 .tbtn{font-family:var(--mono);font-size:12px;padding:8px 12px;border:1px solid var(--line);background:var(--paper);border-radius:var(--r);cursor:pointer;color:var(--ink)}
@@ -184,6 +184,11 @@ textarea:disabled{opacity:.75;background:#F0F2F9}
 .resulthead .big{font-family:var(--mono);font-size:42px;font-weight:700;color:var(--green);line-height:1}
 .resulthead p{margin:4px 0 0;font-size:13px;color:#C9CEEA;max-width:52ch}
 .resulthead h2{margin:0;font-size:20px;color:#fff;font-family:var(--sans);letter-spacing:0;text-transform:none}
+.resulthead .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.resulthead .btn.ghost{color:#fff;border-color:#3B4270;background:none}
+.resulthead .btn.ghost:hover:not(:disabled){background:#232A55;border-color:#4A5290}
+.rowdel{border:1px solid var(--line);background:var(--paper);color:var(--flag);border-radius:var(--r);cursor:pointer;font-family:var(--mono);font-size:14px;line-height:1;padding:4px 9px}
+.rowdel:hover{background:#FBEDEE;border-color:var(--flag)}
 table{width:100%;border-collapse:collapse;font-size:13px;background:var(--paper)}
 th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:9px 8px;font-weight:400}
 td{border-bottom:1px solid var(--line);padding:9px 8px;vertical-align:top}
@@ -323,8 +328,8 @@ tr.detail td{background:var(--mist);padding:0}
 
       <section class="panel">
         <div class="stage">
-          <div class="loadmsg" id="loadmsg">Loading the film. This activity needs an internet connection.</div>
-          <div id="player"></div>
+          <video id="film" preload="metadata" playsinline src="assets/videos/night-shift.mp4"></video>
+          <div class="loadmsg" id="loadmsg">Loading the film.</div>
         </div>
 
         <div class="transport">
@@ -390,22 +395,11 @@ tr.detail td{background:var(--mist);padding:0}
     </div>
 
     <details class="setup">
-      <summary>Instructor setup</summary>
-      <div class="setuprow">
-        <div>
-          <label for="vidId">Film video ID</label>
-          <input id="vidId" type="text" value="syPO8e36YSI" size="14">
-        </div>
-        <div>
-          <label for="offset">Timecode offset, seconds</label>
-          <input id="offset" type="number" step="0.1" value="0" style="width:120px">
-        </div>
-        <button class="btn ghost" id="btnApply">Apply</button>
-      </div>
-      <p class="setupnote">
-        All question timecodes come from the 11:36 release of the film at 24 fps. If the hosted copy runs a moment
-        early or late, play question 1 and confirm the first cut lands at 01:18.9 on the readout, then nudge the offset
-        until it does. The offset shifts every question and every ribbon mark together.
+      <summary>Keyboard shortcuts</summary>
+      <p class="setupnote" style="margin-top:12px">
+        Spacebar plays and pauses. Left and right arrows step one frame at a time, which is how you check whether an
+        action really does carry across a cut. R replays the current question from the start. All timecodes are read
+        straight from the film at 24 frames per second, so what the readout says is what the frame is.
       </p>
     </details>
   </main>
@@ -428,8 +422,9 @@ tr.detail td{background:var(--mist);padding:0}
         <h2 id="resTitle">Your results</h2>
         <p id="resNote">Answer every question, then export the CSV and submit that file.</p>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+      <div class="acts">
         <button class="btn" id="btnExport">Export CSV</button>
+        <button class="btn ghost" id="btnFinish">Finish and return to start</button>
       </div>
     </div>
     <div class="panel" style="padding:0;overflow-x:auto">
@@ -442,7 +437,7 @@ tr.detail td{background:var(--mist);padding:0}
 
   <p class="footnote">
     Cut points were found with automated scene detection and confirmed frame by frame, so soft cuts and dissolves may
-    sit a frame or two out. All timecodes refer to the 11:36 release at 24 fps.
+    sit a frame or two out. All timecodes are read from the film at 24 frames per second.
     <a href="#instructor" id="lnkAdmin2">Instructor sign in</a>.
   </p>
 </div>
@@ -495,7 +490,7 @@ tr.detail td{background:var(--mist);padding:0}
           <table>
             <thead><tr>
               <th>Student</th><th>HCT ID</th><th style="width:56px">Try</th><th style="width:112px">Started</th>
-              <th style="width:112px">Last activity</th><th style="width:86px">Progress</th><th style="width:64px">Score</th><th style="width:96px">Status</th>
+              <th style="width:112px">Last activity</th><th style="width:86px">Progress</th><th style="width:64px">Score</th><th style="width:96px">Status</th><th style="width:44px"></th>
             </tr></thead>
             <tbody id="adminBody"></tbody>
           </table>
@@ -527,7 +522,7 @@ var CONFIG = {
 /* ============================================================
    Data
    ============================================================ */
-var FPS = 24, DURATION = 696.06, OFFSET = 0;
+var FPS = 24, DURATION = 696.06;
 
 var CUTS = [78.88,83.25,87.0,89.88,99.88,103.33,109.62,111.83,116.25,163.12,171.17,172.33,173.88,175.29,178.38,180.17,184.12,186.88,187.67,189.17,191.79,196.79,198.96,200.5,202.17,203.21,204.38,208.25,211.5,214.96,218.62,220.79,222.25,223.0,223.46,223.71,225.29,228.33,230.75,231.38,233.42,234.08,234.67,235.17,236.54,237.79,238.42,239.08,242.46,243.58,244.58,245.04,245.54,247.62,249.79,251.33,255.17,255.38,255.58,257.58,258.88,260.21,262.21,263.12,264.5,265.17,266.08,267.21,270.29,270.92,271.17,272.5,274.38,275.88,276.83,277.08,278.25,280.12,283.21,286.92,290.71,292.83,294.21,294.42,295.79,303.88,306.25,308.96,310.92,315.46,317.12,318.38,320.08,323.04,329.71,335.71,341.12,343.96,346.29,347.96,348.92,350.79,352.62,353.62,354.62,355.92,357.5,359.12,359.71,361.17,362.79,363.83,364.5,365.71,366.04,366.75,367.29,369.0,370.62,373.12,374.46,374.92,376.21,377.62,379.29,382.12,385.0,386.71,388.21,391.17,394.04,395.38,397.25,397.62,398.5,400.25,402.38,404.5,405.54,405.92,406.79,409.58,410.29,413.21,414.67,416.08,416.96,420.58,423.33,424.12,425.67,436.71,443.04,445.29,447.46,451.04,451.62,453.96,456.17,457.0,461.29,461.71,463.79,464.46,464.75,466.67,466.96,467.58,467.79,468.96,469.54,474.0,475.79,477.54,478.67,481.33,482.0,482.83,485.83,488.54,490.92,491.25,494.62,498.42,499.42,503.0,513.75,520.21,538.04,543.71,548.5,550.71,552.96,554.25,555.17,559.62,572.71,574.92,579.46,589.29];
 
@@ -719,7 +714,13 @@ var Store = (function(){
     if(!remote) return Promise.resolve(true);
     return fetch(remote + "/attempts.json", {method:"DELETE"}).then(function(){ return true; }).catch(function(){ return false; });
   }
-  return {save:save, loadAll:loadAll, clearAll:clearAll, isRemote:function(){ return !!remote; }};
+  function remove(attemptId){
+    writeLocal(readLocal().filter(function(r){ return r.attemptId !== attemptId; }));
+    if(!remote) return Promise.resolve(true);
+    return fetch(remote + "/attempts/" + encodeURIComponent(attemptId) + ".json", {method:"DELETE"})
+      .then(function(){ return true; }).catch(function(){ return false; });
+  }
+  return {save:save, loadAll:loadAll, clearAll:clearAll, remove:remove, isRemote:function(){ return !!remote; }};
 })();
 
 function makeAttemptId(){ return "a" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -792,64 +793,61 @@ $("btnStart").addEventListener("click", function(){
 validateGate(false);
 
 /* ============================================================
-   Film player
+   Film player, local file
    ============================================================ */
-var player = null, ready = false;
-var tag = document.createElement("script");
-tag.src = "https://www.youtube.com/iframe_api";
-document.head.appendChild(tag);
+var film = $("film");
+var ready = false;
 
-function onYouTubeIframeAPIReady(){ buildPlayer($("vidId").value.trim()); }
-
-function buildPlayer(id){
-  if(player && player.destroy) player.destroy();
-  var host = document.createElement("div");
-  host.id = "player";
-  var old = $("player");
-  old.parentNode.replaceChild(host, old);
+film.addEventListener("loadedmetadata", function(){
+  ready = true;
+  if(isFinite(film.duration) && film.duration > 60) DURATION = film.duration;
+  $("loadmsg").style.display = "none";
+});
+film.addEventListener("error", function(){
   ready = false;
-  player = new YT.Player("player", {
-    videoId: id,
-    playerVars: {rel:0, modestbranding:1, playsinline:1, cc_load_policy:0, iv_load_policy:3},
-    events: {
-      onReady: function(){ ready = true; $("loadmsg").style.display = "none"; },
-      onStateChange: function(e){
-        state.playing = (e.data === YT.PlayerState.PLAYING);
-        $("btnPlay").textContent = state.playing ? "Pause" : "Play";
-      }
-    }
-  });
-}
-function nowT(){ return ready ? player.getCurrentTime() - OFFSET : 0; }
-function seek(t){ if(ready) player.seekTo(Math.max(0, Math.min(t, DURATION)) + OFFSET, true); }
+  $("loadmsg").style.display = "flex";
+  $("loadmsg").textContent = "The film could not be loaded. Check that assets/videos/night-shift.mp4 is in place.";
+});
+film.addEventListener("play",  function(){ state.playing = true;  $("btnPlay").textContent = "Pause"; });
+film.addEventListener("pause", function(){ state.playing = false; $("btnPlay").textContent = "Play"; });
+film.addEventListener("seeked", paintTime);
 
-setInterval(function(){
+function nowT(){ return film.currentTime || 0; }
+function seek(t){
   if(!ready) return;
+  film.currentTime = Math.max(0, Math.min(t, DURATION - 0.05));
+}
+function paintTime(){
   var t = nowT();
   $("tcDisplay").textContent = tc(t);
-  $("playhead").style.left = (Math.max(0,t) / DURATION * 100) + "%";
-  if(state.clipEnd !== null && t >= state.clipEnd){ player.pauseVideo(); state.clipEnd = null; }
-}, 90);
+  $("playhead").style.left = (Math.max(0, t) / DURATION * 100) + "%";
+}
+function frameLoop(){
+  if(ready){
+    paintTime();
+    if(state.clipEnd !== null && nowT() >= state.clipEnd){
+      film.pause();
+      state.clipEnd = null;
+    }
+  }
+  requestAnimationFrame(frameLoop);
+}
+requestAnimationFrame(frameLoop);
 
 $("btnPlay").addEventListener("click", function(){
   if(!ready) return;
   state.clipEnd = null;
-  if(state.playing) player.pauseVideo(); else player.playVideo();
+  if(film.paused) film.play(); else film.pause();
 });
-$("btnBack1").addEventListener("click", function(){ if(ready){ player.pauseVideo(); seek(nowT() - 1/FPS); } });
-$("btnFwd1").addEventListener("click",  function(){ if(ready){ player.pauseVideo(); seek(nowT() + 1/FPS); } });
+$("btnBack1").addEventListener("click", function(){ if(ready){ film.pause(); seek(nowT() - 1/FPS); } });
+$("btnFwd1").addEventListener("click",  function(){ if(ready){ film.pause(); seek(nowT() + 1/FPS); } });
 $("btnBack5").addEventListener("click", function(){ seek(nowT() - 5); });
 $("btnFwd5").addEventListener("click",  function(){ seek(nowT() + 5); });
 $("btnSpeed").addEventListener("click", function(e){
   if(!ready) return;
-  var slow = player.getPlaybackRate() !== 0.5;
-  player.setPlaybackRate(slow ? 0.5 : 1);
+  var slow = film.playbackRate !== 0.5;
+  film.playbackRate = slow ? 0.5 : 1;
   e.target.textContent = slow ? "Normal speed" : "Half speed";
-});
-$("btnApply").addEventListener("click", function(){
-  OFFSET = parseFloat($("offset").value) || 0;
-  var id = $("vidId").value.trim();
-  if(id && window.YT && YT.Player) buildPlayer(id);
 });
 
 document.addEventListener("keydown", function(e){
@@ -977,8 +975,9 @@ function playClip(){
   if(!ready) return;
   var task = TASKS[state.idx];
   state.clipEnd = task.outT;
-  player.seekTo(task.inT + OFFSET, true);
-  player.playVideo();
+  film.currentTime = task.inT;
+  var p = film.play();
+  if(p && p.catch) p.catch(function(){});
 }
 
 function render(){
@@ -1049,7 +1048,11 @@ $("btnCheck").addEventListener("click", function(){
   a.correct = (a.picked === TASKS[state.idx].ans);
   render();
   pushRecord();
-  $("verdict").scrollIntoView({behavior:"smooth", block:"nearest"});
+  if(state.answers.every(function(x){ return x.checked; })){
+    showView("results");
+  } else {
+    $("verdict").scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
 });
 $("btnNext").addEventListener("click", function(){ goTo(state.idx + 1); });
 $("btnPrev").addEventListener("click", function(){ goTo(state.idx - 1); });
@@ -1063,7 +1066,7 @@ function renderResults(){
   $("resBig").textContent = right + " / " + TASKS.length;
   $("resTitle").textContent = done === TASKS.length ? "All questions answered" : "Your results so far";
   $("resNote").textContent = done === TASKS.length
-    ? "Your work has been recorded for your instructor. Export the CSV as well if you were asked to hand one in."
+    ? "Your work has been recorded for your instructor. Export the CSV if you were asked to hand one in, then return to the start screen so the next student can begin."
     : (TASKS.length - done) + " questions still to answer.";
   $("btnExport").disabled = done === 0;
 
@@ -1118,6 +1121,41 @@ $("btnExport").addEventListener("click", function(){
 });
 
 /* ============================================================
+   Finish and hand over to the next student
+   ============================================================ */
+function resetStudent(){
+  state.idx = 0;
+  state.name = "";
+  state.id = "";
+  state.attemptId = "";
+  state.startedAt = "";
+  state.clipEnd = null;
+  state.answers = TASKS.map(function(){ return {picked:null, checked:false, correct:false, just:""}; });
+  if(ready){ film.pause(); film.currentTime = 0; }
+  $("stuName").value = "";
+  $("stuId").value = "";
+  $("fName").classList.remove("err");
+  $("fId").classList.remove("err");
+  $("saveDot").textContent = "";
+  validateGate(false);
+  showView("activity");
+  render();
+  $("app").classList.add("hidden");
+  $("gate").classList.remove("hidden");
+  window.scrollTo({top:0});
+  setTimeout(function(){ $("stuName").focus(); }, 60);
+}
+$("btnFinish").addEventListener("click", function(){
+  var done = state.answers.filter(function(x){ return x.checked; }).length;
+  if(done < TASKS.length){
+    if(!confirm("You have answered " + done + " of " + TASKS.length + " questions. Leaving now ends this attempt. Continue?")) return;
+  }
+  saveJust();
+  pushRecord();
+  resetStudent();
+});
+
+/* ============================================================
    Views
    ============================================================ */
 function showView(which){
@@ -1129,7 +1167,7 @@ function showView(which){
     else $(map[k][1]).removeAttribute("aria-current");
   });
   if(which !== "reference") pauseAllRefVideos();
-  if(which !== "activity" && ready) player.pauseVideo();
+  if(which !== "activity" && ready) film.pause();
   window.scrollTo({top:0, behavior:"smooth"});
 }
 $("navActivity").addEventListener("click", function(){ showView("activity"); });
@@ -1261,7 +1299,7 @@ function renderAdmin(){
   var body = $("adminBody");
   body.innerHTML = "";
   if(!rows.length){
-    body.innerHTML = '<tr><td colspan="8"><div class="emptynote">No attempts yet. As students work, their answers appear here.</div></td></tr>';
+    body.innerHTML = '<tr><td colspan="9"><div class="emptynote">No attempts yet. As students work, their answers appear here.</div></td></tr>';
     return;
   }
   rows.forEach(function(r){
@@ -1275,10 +1313,17 @@ function renderAdmin(){
       '<td class="tcell">' + shortTime(r.updatedAt) + '</td>' +
       '<td class="tcell">' + (r.answered || 0) + ' / ' + (r.total || TASKS.length) + '</td>' +
       '<td class="tcell"><b>' + (r.score || 0) + '</b></td>' +
-      '<td>' + (r.completed ? '<span class="pillok">Finished</span>' : '<span class="pillwait">In progress</span>') + '</td>';
+      '<td>' + (r.completed ? '<span class="pillok">Finished</span>' : '<span class="pillwait">In progress</span>') + '</td>' +
+      '<td><button class="rowdel" title="Delete this attempt">&#215;</button></td>';
     tr.addEventListener("click", function(){
       admin.open[r.attemptId] = !admin.open[r.attemptId];
       renderAdmin();
+    });
+    tr.querySelector(".rowdel").addEventListener("click", function(ev){
+      ev.stopPropagation();
+      if(!confirm("Delete the attempt by " + r.name + " (" + r.hctId + ")? This cannot be undone.")) return;
+      delete admin.open[r.attemptId];
+      Store.remove(r.attemptId).then(loadAdmin);
     });
     body.appendChild(tr);
 
@@ -1298,7 +1343,7 @@ function renderAdmin(){
                (a.checked && !a.correct ? '<span style="color:var(--muted)">answer: ' + esc(corrName) + '</span>' : '') +
                '</div>' + (a.just ? '<div class="qj">' + esc(a.just) + '</div>' : '') + '</div>';
       }).join("");
-      dt.innerHTML = '<td colspan="8"><div class="detailbox"><h4>' + esc(r.name) + ', attempt ' + (r._try || 1) + '</h4>' + lines + '</div></td>';
+      dt.innerHTML = '<td colspan="9"><div class="detailbox"><h4>' + esc(r.name) + ', attempt ' + (r._try || 1) + '</h4>' + lines + '</div></td>';
       body.appendChild(dt);
     }
   });
