@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cut Detective | Continuity Editing Lab</title>
+<meta name="description" content="A continuity editing lab for Applied Media students.">
+<style>
+:root{
+  --am-blue:#1828B3;
+  --hct-blue:#00249C;
+  --green:#47D7AC;
+  --ink:#0E1230;
+  --paper:#FFFFFF;
+  --mist:#F4F6FC;
+  --line:#DCE1F4;
+  --muted:#5A6188;
+  --flag:#C0343A;
+
+  --t-cutonaction:#47D7AC;
+  --t-eyeline:#0E8F8F;
+  --t-graphic:#1F7A8C;
+  --t-rule180:#1828B3;
+  --t-reverse:#2AAE8C;
+  --t-elliptical:#3A3F63;
+  --t-crosscut:#7A4FD0;
+  --t-eyetrace:#8A93C9;
+  --t-split:#6E5BD6;
+  --t-intellectual:#5B6BE0;
+  --t-insert:#00249C;
+
+  --sans:"Aktiv Grotesk",Tahoma,Verdana,sans-serif;
+  --mono:ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+  --r:4px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--mist);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font-family:inherit}
+.hidden{display:none !important}
+
+/* ---------------- shared controls ---------------- */
+.btn{
+  font-family:var(--sans);font-size:14px;font-weight:700;padding:11px 20px;border-radius:var(--r);
+  cursor:pointer;border:1px solid var(--am-blue);background:var(--am-blue);color:#fff;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.btn:hover:not(:disabled){background:var(--hct-blue);border-color:var(--hct-blue)}
+.btn.ghost{background:none;color:var(--am-blue)}
+.btn.ghost:hover:not(:disabled){background:#E9EDFB}
+.btn.big{font-size:15px;padding:13px 26px}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:focus-visible,.chip:focus-visible,.navbtn:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+
+/* ---------------- gate ---------------- */
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--ink)}
+.gatecard{background:var(--paper);border-radius:8px;max-width:520px;width:100%;padding:36px 34px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.gatecard .brandline{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.gatecard h1{margin:0 0 8px;font-size:34px;line-height:1;font-weight:700;letter-spacing:-.02em;text-transform:uppercase}
+.gatecard h1 span{color:var(--am-blue)}
+.gatecard p.lead{margin:0 0 24px;font-size:14px;color:var(--muted)}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;letter-spacing:.02em}
+.field input{width:100%;font-family:var(--sans);font-size:15px;padding:12px 13px;border:1px solid var(--line);border-radius:var(--r);background:var(--mist)}
+.field .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+.field.err input{border-color:var(--flag);background:#FDF2F2}
+.field.err .hint{color:var(--flag)}
+.gatecard .btn{width:100%;margin-top:6px}
+.gaterules{margin:22px 0 0;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.7}
+.gaterules b{color:var(--ink)}
+
+/* ---------------- app shell ---------------- */
+.topbar{
+  position:sticky;top:0;z-index:40;background:var(--paper);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:16px;padding:11px 20px;flex-wrap:wrap;
+}
+.topbar .mark{font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap}
+.topbar .mark span{color:var(--am-blue)}
+.navtabs{display:flex;gap:4px;margin-left:6px}
+.navbtn{
+  font-size:13px;font-weight:700;padding:8px 14px;border-radius:var(--r);border:1px solid transparent;
+  background:none;cursor:pointer;color:var(--muted);
+}
+.navbtn[aria-current=page]{background:#E9EDFB;color:var(--am-blue)}
+.navbtn:hover{color:var(--am-blue)}
+.whoami{margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.whoami .who{font-size:12.5px;color:var(--muted);text-align:right;line-height:1.3}
+.whoami .who b{display:block;color:var(--ink);font-size:13px}
+.scorepill{font-family:var(--mono);font-size:13px;font-weight:700;background:var(--ink);color:var(--green);padding:7px 13px;border-radius:20px;white-space:nowrap}
+
+.page{max-width:1500px;margin:0 auto;padding:20px}
+.cols{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(360px,1fr);gap:20px;align-items:start}
+@media (max-width:1080px){.cols{grid-template-columns:1fr}}
+
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:18px}
+.panel h2{margin:0 0 4px;font-size:13px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:400}
+
+/* ---------------- player ---------------- */
+.stage{background:#000;border-radius:var(--r);position:relative;overflow:hidden;aspect-ratio:16/9}
+.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.loadmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#C9CEEA;font-size:13px;text-align:center;padding:24px}
+.transport{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.tbtn{font-family:var(--mono);font-size:12px;padding:8px 12px;border:1px solid var(--line);background:var(--paper);border-radius:var(--r);cursor:pointer;color:var(--ink)}
+.tbtn:hover{border-color:var(--am-blue);color:var(--am-blue)}
+.tc{font-family:var(--mono);font-size:15px;font-weight:700;background:var(--ink);color:var(--green);padding:8px 13px;border-radius:var(--r);margin-left:auto}
+
+.ribbonwrap{margin-top:22px}
+.ribbonhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:7px}
+.ribbonhead h2{margin:0}
+.ribbonhead em{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.track{position:relative;height:52px;background:var(--ink);border-radius:var(--r);overflow:hidden;cursor:pointer}
+.cutline{position:absolute;top:0;width:1px;height:25px;background:rgba(71,215,172,.5)}
+.taskflag{position:absolute;bottom:0;width:3px;height:27px;background:#7C83AD;cursor:pointer}
+.taskflag.done{background:var(--green)}
+.taskflag.active{background:#fff;width:5px}
+.playhead{position:absolute;top:0;bottom:0;width:2px;background:#fff;pointer-events:none}
+.ruler{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+.ribbonnote{font-size:12.5px;color:var(--muted);margin:10px 0 0;line-height:1.65}
+.ribbonnote b{color:var(--ink)}
+
+/* ---------------- task navigator ---------------- */
+.navstrip{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.navdot{
+  width:34px;height:34px;border-radius:var(--r);border:1px solid var(--line);background:var(--paper);
+  font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);
+}
+.navdot:hover{border-color:var(--am-blue)}
+.navdot.current{border-color:var(--am-blue);border-width:2px;color:var(--am-blue)}
+.navdot.ok{background:var(--green);border-color:var(--green);color:var(--ink)}
+.navdot.no{background:#F6DCDD;border-color:var(--flag);color:var(--flag)}
+
+/* ---------------- question ---------------- */
+.qhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--am-blue);margin:0}
+.locked{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:3px 8px;border-radius:20px}
+.qtitle{margin:6px 0 0;font-size:19px;line-height:1.25}
+.qprompt{margin:10px 0 16px;font-size:14.5px}
+.replayrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+
+.steplabel{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;margin-bottom:8px}
+.stepnum{width:20px;height:20px;border-radius:50%;background:var(--am-blue);color:#fff;font-family:var(--mono);font-size:11px;display:flex;align-items:center;justify-content:center;flex:none}
+
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:7px;margin-bottom:20px}
+.chip{
+  font-size:13px;padding:10px 12px;border:1px solid var(--line);background:var(--paper);border-radius:var(--r);
+  cursor:pointer;color:var(--ink);display:flex;align-items:center;gap:8px;text-align:left;line-height:1.3;
+}
+.chip:hover:not(:disabled){border-color:var(--am-blue);background:#F7F9FF}
+.chip .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.chip[aria-pressed=true]{border-color:var(--am-blue);border-width:2px;background:#E9EDFB;font-weight:700;padding:9px 11px}
+.chip:disabled{cursor:not-allowed;opacity:.45}
+.chip.right{border-color:var(--green);border-width:2px;background:rgba(71,215,172,.2);opacity:1;font-weight:700;padding:9px 11px}
+.chip.wrong{border-color:var(--flag);border-width:2px;background:#FBEDEE;opacity:1;padding:9px 11px}
+
+textarea{width:100%;font-family:var(--sans);font-size:14px;padding:11px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--mist);color:var(--ink);resize:vertical;min-height:80px;line-height:1.55}
+textarea:disabled{opacity:.75;background:#F0F2F9}
+.charcount{font-size:11px;color:var(--muted);text-align:right;margin-top:4px}
+
+.actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;align-items:center}
+.actions .spacer{flex:1}
+
+.verdict{margin-top:18px;border-radius:var(--r);overflow:hidden;border:1px solid var(--green);background:rgba(71,215,172,.12)}
+.verdict.miss{border-color:var(--flag);background:#FBEDEE}
+.verdict .vhead{padding:12px 15px;font-weight:700;font-size:15px}
+.verdict .vbody{padding:0 15px 14px;font-size:13.5px;line-height:1.65}
+.verdict .vclip{padding:0 15px 15px}
+.verdict video{width:100%;border-radius:var(--r);display:block;background:#000}
+.verdict .cliplabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+
+/* ---------------- reference gallery ---------------- */
+.refintro{margin:0 0 18px;font-size:14px;color:var(--muted);max-width:80ch}
+.refgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.refcard{background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.refcard video{width:100%;display:block;background:#000;aspect-ratio:16/9}
+.refcard .rbody{padding:14px 15px 16px}
+.refcard h3{margin:0 0 6px;font-size:15.5px;display:flex;align-items:center;gap:8px}
+.refcard h3 .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.refcard p{margin:0;font-size:13px;color:var(--muted);line-height:1.6}
+.refcard .tag{display:inline-block;margin-top:9px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+.refcard .tag.absent{border-color:#E4C9CB;color:var(--flag);background:#FCF4F5}
+
+/* ---------------- results ---------------- */
+.resulthead{display:flex;align-items:center;gap:20px;flex-wrap:wrap;background:var(--ink);color:#fff;border-radius:8px;padding:22px 24px;margin-bottom:18px}
+.resulthead .big{font-family:var(--mono);font-size:42px;font-weight:700;color:var(--green);line-height:1}
+.resulthead p{margin:4px 0 0;font-size:13px;color:#C9CEEA;max-width:52ch}
+.resulthead h2{margin:0;font-size:20px;color:#fff;font-family:var(--sans);letter-spacing:0;text-transform:none}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--paper)}
+th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:9px 8px;font-weight:400}
+td{border-bottom:1px solid var(--line);padding:9px 8px;vertical-align:top}
+td.tcell{font-family:var(--mono);white-space:nowrap;font-size:12px}
+.pillok{display:inline-block;background:rgba(71,215,172,.25);color:#0B6B52;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.pillno{display:inline-block;background:#F6DCDD;color:var(--flag);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+
+details.setup{margin-top:20px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 18px}
+details.setup summary{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.setuprow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
+.setuprow label{font-size:11px;font-weight:700;display:block;margin-bottom:5px}
+.setuprow input{font-family:var(--mono);font-size:12.5px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--mist)}
+.setupnote{font-size:12.5px;color:var(--muted);margin:12px 0 0;line-height:1.65;max-width:80ch}
+.footnote{max-width:1500px;margin:0 auto;padding:8px 20px 40px;font-size:11.5px;color:var(--muted);line-height:1.7}
+
+
+/* ---------------- admin and pin ---------------- */
+.btn.danger{background:none;border-color:#E2C3C5;color:var(--flag)}
+.btn.danger:hover:not(:disabled){background:#FBEDEE;border-color:var(--flag)}
+.btn.small{font-size:12.5px;padding:8px 13px}
+.savedot{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.gatefoot{margin-top:16px;text-align:center;font-size:11.5px}
+.gatefoot a{color:var(--muted);text-decoration:none}
+.gatefoot a:hover{color:var(--am-blue);text-decoration:underline}
+.pillwait{display:inline-block;background:#FBF1DC;color:#B7791F;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+
+.adminwrap{min-height:100vh;background:var(--mist)}
+.adminbar{background:var(--ink);color:#fff;padding:13px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:40}
+.adminbar .mark{font-size:16px;font-weight:700;text-transform:uppercase}
+.adminbar .mark span{color:var(--green)}
+.adminbar .tagline{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#9AA3CE}
+.adminbar .right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.adminbar .btn{border-color:#3B4270;background:#232A55;color:#fff}
+.adminbar .btn:hover:not(:disabled){background:#31396E;border-color:#4A5290}
+.adminbar .btn.danger{background:none;border-color:#6A3438;color:#F2A0A4}
+.adminbar .btn.danger:hover:not(:disabled){background:#3A1F22;border-color:#8A464B}
+
+.pinwrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink);padding:24px}
+.pincard{background:var(--paper);border-radius:8px;max-width:380px;width:100%;padding:32px 30px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.pincard h1{margin:0 0 6px;font-size:22px;text-transform:uppercase}
+.pincard p{margin:0 0 22px;font-size:13px;color:var(--muted)}
+.pincard input{width:100%;text-align:center;font-family:var(--mono);font-size:30px;letter-spacing:.4em;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--mist)}
+.pincard .btn{width:100%;margin-top:14px}
+.pinerr{color:var(--flag);font-size:12.5px;margin-top:12px;min-height:18px}
+.pincard a{display:inline-block;margin-top:16px;font-size:12px;color:var(--muted)}
+
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.stat .n{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1}
+.stat .k{font-size:11.5px;color:var(--muted);margin-top:4px}
+.stat.accent .n{color:var(--am-blue)}
+
+.adminsplit{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(280px,1fr);gap:18px;align-items:start}
+@media (max-width:1100px){.adminsplit{grid-template-columns:1fr}}
+.toolrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.toolrow input[type=search]{font-family:var(--sans);font-size:13px;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);min-width:220px}
+.toolrow label{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.tablewrap{background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow-x:auto}
+tr.attempt{cursor:pointer}
+tr.attempt:hover{background:#F7F9FF}
+tr.detail td{background:var(--mist);padding:0}
+.detailbox{padding:14px 16px}
+.detailbox h4{margin:0 0 10px;font-size:13px}
+.qline{border-bottom:1px solid var(--line);padding:8px 0;font-size:12.5px}
+.qline:last-child{border-bottom:none}
+.qline .qtop{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.qline .qn{font-family:var(--mono);font-size:11px;color:var(--muted);width:26px;flex:none}
+.qline .qj{color:var(--muted);margin-top:3px;padding-left:34px}
+.bars{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:16px}
+.bars h3{margin:0 0 12px;font-size:13px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:400}
+.bar{margin-bottom:9px}
+.bar .lab{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px}
+.bar .lab span:last-child{font-family:var(--mono);color:var(--muted)}
+.bar .rail{height:7px;background:var(--mist);border-radius:4px;overflow:hidden}
+.bar .fill{height:100%;background:var(--green);border-radius:4px}
+.bar.weak .fill{background:var(--flag)}
+.emptynote{padding:40px 20px;text-align:center;color:var(--muted);font-size:13.5px}
+.banner{background:#FBF1DC;border:1px solid #E8D3A8;color:#7A5A15;border-radius:8px;padding:12px 16px;font-size:12.5px;line-height:1.6;margin-bottom:16px}
+.banner b{color:#5C440F}
+
+@media print{.topbar,.adminbar,.toolrow,.stage,.transport,.ribbonwrap,.navstrip,.replayrow,.actions,.chips{display:none}.cols{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<!-- ================= GATE ================= -->
+<div class="gate" id="gate">
+  <div class="gatecard">
+    <p class="brandline">Applied Media &middot; Video Editing</p>
+    <h1>Cut <span>Detective</span></h1>
+    <p class="lead">Fifteen edits from a short film. Name the continuity technique at each one and defend your answer in a sentence.</p>
+
+    <div class="field" id="fName">
+      <label for="stuName">Student name</label>
+      <input id="stuName" type="text" autocomplete="name" placeholder="Full name as enrolled">
+      <div class="hint">Required. This appears on your submission.</div>
+    </div>
+
+    <div class="field" id="fId">
+      <label for="stuId">HCT ID</label>
+      <input id="stuId" type="text" autocomplete="off" placeholder="H00xxxxxx">
+      <div class="hint">Required.</div>
+    </div>
+
+    <button class="btn big" id="btnStart">Start the activity</button>
+
+    <div class="gaterules">
+      <b>Before you begin.</b> Each question plays its own clip and stops on its own. You can replay a clip as many
+      times as you like, before or after answering. Once you submit an answer it locks, so watch first and choose second.
+      Open the technique reference at any time. Your work is recorded as you go and your instructor can see it.
+    </div>
+    <p class="gatefoot"><a href="#instructor" id="lnkAdmin">Instructor sign in</a></p>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden">
+
+  <div class="topbar">
+    <div class="mark">Cut <span>Detective</span></div>
+    <nav class="navtabs">
+      <button class="navbtn" id="navActivity" aria-current="page">Activity</button>
+      <button class="navbtn" id="navRef">Technique reference</button>
+      <button class="navbtn" id="navResults">Results</button>
+    </nav>
+    <div class="whoami">
+      <span class="savedot" id="saveDot"></span>
+      <div class="who"><b id="whoName">.</b><span id="whoId">.</span></div>
+      <div class="scorepill" id="scorePill">0 answered</div>
+    </div>
+  </div>
+
+  <!-- ---------- ACTIVITY ---------- -->
+  <main class="page" id="viewActivity">
+    <div class="cols">
+
+      <section class="panel">
+        <div class="stage">
+          <div class="loadmsg" id="loadmsg">Loading the film. This activity needs an internet connection.</div>
+          <div id="player"></div>
+        </div>
+
+        <div class="transport">
+          <button class="tbtn" id="btnBack1" title="Step back about one frame">&#9664;&#124;</button>
+          <button class="tbtn" id="btnPlay" title="Play or pause, spacebar">Play</button>
+          <button class="tbtn" id="btnFwd1" title="Step forward about one frame">&#124;&#9654;</button>
+          <button class="tbtn" id="btnBack5">-5s</button>
+          <button class="tbtn" id="btnFwd5">+5s</button>
+          <button class="tbtn" id="btnSpeed">Half speed</button>
+          <span class="tc" id="tcDisplay">00:00:00.00</span>
+        </div>
+
+        <div class="ribbonwrap">
+          <div class="ribbonhead">
+            <h2>Shot ribbon</h2>
+            <em>200 cuts across 11:36</em>
+          </div>
+          <div class="track" id="track"><div class="playhead" id="playhead" style="left:0"></div></div>
+          <div class="ruler"><span>00:00</span><span>02:54</span><span>05:48</span><span>08:42</span><span>11:36</span></div>
+          <p class="ribbonnote">
+            Green hairlines are cuts. Flags along the bottom are the fifteen questions, and they turn green once answered.
+            Read the rhythm before you read any single cut. The first <b>79 seconds carry no cut at all</b>, while the fight
+            from 03:42 to 08:20 averages roughly <b>one shot every 1.2 seconds</b>. Click the ribbon to scrub anywhere.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="navstrip" id="navStrip"></div>
+
+        <div class="qhead">
+          <p class="eyebrow" id="qEyebrow">Question 1 of 15</p>
+          <span class="locked hidden" id="qLocked">Answer locked</span>
+        </div>
+        <h3 class="qtitle" id="qTitle">Loading</h3>
+        <p class="qprompt" id="qPrompt"></p>
+
+        <div class="replayrow">
+          <button class="btn" id="btnClip">Play the clip</button>
+          <button class="btn ghost" id="btnClipAgain">Replay from the start</button>
+        </div>
+
+        <div class="steplabel"><span class="stepnum">1</span>Choose the technique</div>
+        <div class="chips" id="chips"></div>
+
+        <div class="steplabel"><span class="stepnum">2</span>Explain why, in one sentence</div>
+        <textarea id="just" placeholder="Name what carries across the cut: an action, a look, a line of dialogue, a piece of geography, a stretch of removed time."></textarea>
+        <div class="charcount" id="charCount">0 characters</div>
+
+        <div class="actions">
+          <button class="btn ghost" id="btnPrev">Back</button>
+          <div class="spacer"></div>
+          <button class="btn" id="btnCheck" disabled>Submit answer</button>
+          <button class="btn" id="btnNext">Next</button>
+        </div>
+
+        <div class="verdict hidden" id="verdict">
+          <div class="vhead" id="vHead"></div>
+          <div class="vbody" id="vBody"></div>
+          <div class="vclip" id="vClip"></div>
+        </div>
+      </section>
+    </div>
+
+    <details class="setup">
+      <summary>Instructor setup</summary>
+      <div class="setuprow">
+        <div>
+          <label for="vidId">Film video ID</label>
+          <input id="vidId" type="text" value="syPO8e36YSI" size="14">
+        </div>
+        <div>
+          <label for="offset">Timecode offset, seconds</label>
+          <input id="offset" type="number" step="0.1" value="0" style="width:120px">
+        </div>
+        <button class="btn ghost" id="btnApply">Apply</button>
+      </div>
+      <p class="setupnote">
+        All question timecodes come from the 11:36 release of the film at 24 fps. If the hosted copy runs a moment
+        early or late, play question 1 and confirm the first cut lands at 01:18.9 on the readout, then nudge the offset
+        until it does. The offset shifts every question and every ribbon mark together.
+      </p>
+    </details>
+  </main>
+
+  <!-- ---------- REFERENCE ---------- -->
+  <main class="page hidden" id="viewRef">
+    <p class="refintro">
+      Eleven techniques, each with the clip that defines it. Watch these before you start, and come back to any of them
+      at any point during the activity. Three of the eleven never appear in the film, which is marked on the card.
+      Ruling a technique out for a stated reason is worth as much as naming one.
+    </p>
+    <div class="refgrid" id="refGrid"></div>
+  </main>
+
+  <!-- ---------- RESULTS ---------- -->
+  <main class="page hidden" id="viewResults">
+    <div class="resulthead">
+      <div><div class="big" id="resBig">0 / 15</div></div>
+      <div>
+        <h2 id="resTitle">Your results</h2>
+        <p id="resNote">Answer every question, then export the CSV and submit that file.</p>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="btnExport">Export CSV</button>
+      </div>
+    </div>
+    <div class="panel" style="padding:0;overflow-x:auto">
+      <table>
+        <thead><tr><th style="width:34px">#</th><th style="width:92px">Timecode</th><th style="width:150px">Your answer</th><th style="width:150px">Correct answer</th><th style="width:86px">Result</th><th>Your explanation</th></tr></thead>
+        <tbody id="resBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <p class="footnote">
+    Cut points were found with automated scene detection and confirmed frame by frame, so soft cuts and dissolves may
+    sit a frame or two out. All timecodes refer to the 11:36 release at 24 fps.
+    <a href="#instructor" id="lnkAdmin2">Instructor sign in</a>.
+  </p>
+</div>
+
+<!-- ================= PIN ================= -->
+<div class="pinwrap hidden" id="pinScreen">
+  <div class="pincard">
+    <h1>Instructor sign in</h1>
+    <p>Enter the four digit PIN to open the class dashboard.</p>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="&bull;&bull;&bull;&bull;">
+    <button class="btn" id="btnPin">Open dashboard</button>
+    <div class="pinerr" id="pinErr"></div>
+    <a href="#" id="lnkBackStudent">Back to the activity</a>
+  </div>
+</div>
+
+<!-- ================= INSTRUCTOR DASHBOARD ================= -->
+<div class="adminwrap hidden" id="admin">
+  <div class="adminbar">
+    <div class="mark">Cut <span>Detective</span></div>
+    <span class="tagline">Class dashboard</span>
+    <div class="right">
+      <span class="tagline" id="adminStore"></span>
+      <button class="btn small" id="btnRefresh">Refresh</button>
+      <button class="btn small" id="btnExportAll">Export all as CSV</button>
+      <button class="btn small danger" id="btnClearAll">Clear all attempts</button>
+      <button class="btn small" id="btnExit">Exit</button>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="banner hidden" id="adminBanner"></div>
+
+    <div class="statgrid">
+      <div class="stat"><div class="n" id="stAttempts">0</div><div class="k">Attempts recorded</div></div>
+      <div class="stat"><div class="n" id="stStudents">0</div><div class="k">Individual students</div></div>
+      <div class="stat"><div class="n" id="stDone">0</div><div class="k">Finished all fifteen</div></div>
+      <div class="stat accent"><div class="n" id="stAvg">0</div><div class="k">Average score out of 15</div></div>
+      <div class="stat"><div class="n" id="stHard">.</div><div class="k">Most missed question</div></div>
+    </div>
+
+    <div class="adminsplit">
+      <div>
+        <div class="toolrow">
+          <input type="search" id="adminSearch" placeholder="Search by name or HCT ID">
+          <label><input type="checkbox" id="autoRefresh" checked> Refresh every 20 seconds</label>
+          <span class="tagline" id="lastSync" style="color:var(--muted)"></span>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr>
+              <th>Student</th><th>HCT ID</th><th style="width:56px">Try</th><th style="width:112px">Started</th>
+              <th style="width:112px">Last activity</th><th style="width:86px">Progress</th><th style="width:64px">Score</th><th style="width:96px">Status</th>
+            </tr></thead>
+            <tbody id="adminBody"></tbody>
+          </table>
+        </div>
+        <p class="setupnote">Click any row to open that student's fifteen answers and written explanations.</p>
+      </div>
+
+      <div class="bars">
+        <h3>Question difficulty</h3>
+        <div id="barList"></div>
+        <p class="setupnote" style="margin-top:14px">Percentage of submitted answers that were correct. Low bars are where the class needs another pass.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
+var CONFIG = {
+  ADMIN_PIN: "1682",
+  /* Leave FIREBASE_DB_URL empty to record attempts on the device only.
+     Fill it in to collect the whole class in one place, for example
+     "https://your-project-default-rtdb.firebaseio.com" with no trailing slash. */
+  FIREBASE_DB_URL: ""
+};
+
+/* ============================================================
+   Data
+   ============================================================ */
+var FPS = 24, DURATION = 696.06, OFFSET = 0;
+
+var CUTS = [78.88,83.25,87.0,89.88,99.88,103.33,109.62,111.83,116.25,163.12,171.17,172.33,173.88,175.29,178.38,180.17,184.12,186.88,187.67,189.17,191.79,196.79,198.96,200.5,202.17,203.21,204.38,208.25,211.5,214.96,218.62,220.79,222.25,223.0,223.46,223.71,225.29,228.33,230.75,231.38,233.42,234.08,234.67,235.17,236.54,237.79,238.42,239.08,242.46,243.58,244.58,245.04,245.54,247.62,249.79,251.33,255.17,255.38,255.58,257.58,258.88,260.21,262.21,263.12,264.5,265.17,266.08,267.21,270.29,270.92,271.17,272.5,274.38,275.88,276.83,277.08,278.25,280.12,283.21,286.92,290.71,292.83,294.21,294.42,295.79,303.88,306.25,308.96,310.92,315.46,317.12,318.38,320.08,323.04,329.71,335.71,341.12,343.96,346.29,347.96,348.92,350.79,352.62,353.62,354.62,355.92,357.5,359.12,359.71,361.17,362.79,363.83,364.5,365.71,366.04,366.75,367.29,369.0,370.62,373.12,374.46,374.92,376.21,377.62,379.29,382.12,385.0,386.71,388.21,391.17,394.04,395.38,397.25,397.62,398.5,400.25,402.38,404.5,405.54,405.92,406.79,409.58,410.29,413.21,414.67,416.08,416.96,420.58,423.33,424.12,425.67,436.71,443.04,445.29,447.46,451.04,451.62,453.96,456.17,457.0,461.29,461.71,463.79,464.46,464.75,466.67,466.96,467.58,467.79,468.96,469.54,474.0,475.79,477.54,478.67,481.33,482.0,482.83,485.83,488.54,490.92,491.25,494.62,498.42,499.42,503.0,513.75,520.21,538.04,543.71,548.5,550.71,552.96,554.25,555.17,559.62,572.71,574.92,579.46,589.29];
+
+var TECHNIQUES = [
+  {id:"cutonaction", name:"Cut on Action", color:"var(--t-cutonaction)", clip:"cut-on-action",
+   def:"Switch to a different angle but carry the action of the previous shot straight through the cut. The eye follows the movement and stops noticing the join.",
+   inFilm:true},
+  {id:"eyeline", name:"Eyeline Match", color:"var(--t-eyeline)", clip:"eyeline-match",
+   def:"Show what a character is looking at off screen. The look motivates the cut and builds importance around the object or person we then see.",
+   inFilm:true},
+  {id:"graphic", name:"Graphic Match", color:"var(--t-graphic)", clip:"graphic-match",
+   def:"An object in the new shot echoes the shape of the object that ended the previous one, usually to signal that the setting or location has changed.",
+   inFilm:false},
+  {id:"rule180", name:"180 Degree Rule", color:"var(--t-rule180)", clip:"rule-180",
+   def:"Keep the camera on one side of the imaginary line between two subjects so left stays left and right stays right from shot to shot.",
+   inFilm:true},
+  {id:"reverse", name:"Shot-Reverse-Shot", color:"var(--t-reverse)", clip:"shot-reverse-shot",
+   def:"Alternate complementary angles between two people so a conversation reads as one continuous exchange rather than two separate scenes.",
+   inFilm:true},
+  {id:"elliptical", name:"Elliptical Edit", color:"var(--t-elliptical)", clip:"elliptical-edit",
+   def:"Condense a long stretch of time by cutting out the parts the story does not need, while keeping the sequence logical.",
+   inFilm:true},
+  {id:"crosscut", name:"Cross Cutting", color:"var(--t-crosscut)", clip:"cross-cutting",
+   def:"Alternate between two separate lines of action happening at the same time in different places, so the two build pressure on each other.",
+   inFilm:false},
+  {id:"eyetrace", name:"Eye Trace", color:"var(--t-eyetrace)", clip:"eye-trace",
+   def:"Place the point of interest in the same screen zone on both sides of the cut so the eye does not have to hunt for the subject in the new angle.",
+   inFilm:true},
+  {id:"split", name:"Split Edit, L cut or J cut", color:"var(--t-split)", clip:"split-edit",
+   def:"Sound and picture cut at different moments. Audio either runs on past the picture cut or arrives ahead of it.",
+   inFilm:true},
+  {id:"intellectual", name:"Intellectual Montage", color:"var(--t-intellectual)", clip:"intellectual-montage",
+   def:"Join unrelated images so the collision of the two creates an idea that neither shot contains on its own.",
+   inFilm:false},
+  {id:"insert", name:"Insert Shot", color:"var(--t-insert)", clip:"insert-shot",
+   def:"A close shot of a specific prop or detail inside a scene you have already established. It magnifies, it does not relocate.",
+   inFilm:true}
+];
+
+var TASKS = [
+  {t:95, inT:79, outT:134, title:"01:19 to 02:14, the ride across the city",
+   prompt:"The journey from the alley to the depot crosses the whole city in about fifty five seconds. Name the technique.",
+   ans:"elliptical",
+   why:"The ride matters to the story as a fact, not as a duration, so the film keeps the beats that carry information and drops everything else. Time is condensed while the sequence still reads as logical."},
+
+  {t:83.25, inT:80.5, outT:86, title:"Cut at 01:23.3",
+   prompt:"During the ride the film cuts from the rider on the road to a tight shot of the bike itself. Name the technique.",
+   ans:"insert",
+   why:"A close view of a prop inside a space we have already established, framed from the same side. It magnifies detail without moving us anywhere new, which is what separates an insert from a cut to a different location."},
+
+  {t:135, inT:130, outT:146, title:"Transition at 02:15 to 02:22",
+   prompt:"The montage fades out, the title holds, and the depot fades up. Name the technique and say what has been removed.",
+   ans:"elliptical",
+   why:"The arrival, the parking and the walk in are all cut out because none of them carry story. The fade is only the punctuation. The edit itself is the removal of time."},
+
+  {t:163.12, inT:158, outT:168, title:"Cut at 02:43.1",
+   prompt:"A long static wide of the depot cuts to a two shot of driver and customer. What does the wide give the editor before he cuts closer?",
+   ans:"rule180",
+   why:"It plants the line between the two characters. Once we have seen who stands where, every closer angle can stay on one side of that line, so nobody appears to swap sides of frame in the shots that follow."},
+
+  {t:171.17, inT:168, outT:176, title:"Cut at 02:51.2",
+   prompt:"The two shot cuts to a big close up of hands passing money. Name the technique.",
+   ans:"insert",
+   why:"An insert carrying the plot point. The disputed payment causes everything that follows, so the film gives it a frame of its own instead of leaving it buried in the wide."},
+
+  {t:178.38, inT:175, outT:180.4, title:"Cut at 02:58.4",
+   prompt:"His close up cuts to a long shot of the customer up the alley. What makes this cut feel automatic?",
+   ans:"eyeline",
+   why:"He looks off frame, and the next shot shows what lies in the direction of that look. The look motivates the cut, so two separate camera positions are read as one continuous space."},
+
+  {t:179, inT:176, outT:182, title:"02:58.5 to 03:00, listen instead of look",
+   prompt:"He shouts Miss while the picture is on her and he is nowhere in frame. Name the technique.",
+   ans:"split",
+   why:"Sound and picture do not cut at the same moment. Argue in class whether this is an L cut, because his voice runs on from his own shot, or a J cut, because his voice arrives ahead of the shot we return to at 03:00. Both readings are defensible, and that argument is the point."},
+
+  {t:180.17, inT:176.5, outT:185, title:"Pattern from 02:55 to 03:04",
+   prompt:"Watch the whole payment argument. Name the coverage pattern.",
+   ans:"reverse",
+   why:"Complementary angles alternate between the two characters. Because the line planted at 02:43 is respected throughout, the alternation reads as one argument rather than two separate scenes."},
+
+  {t:216.8, inT:213, outT:221, title:"Shot at 03:36.8",
+   prompt:"Four men have surrounded him and the film pulls out to a high overhead of the alley. What is this shot protecting?",
+   ans:"rule180",
+   why:"The line has moved. A one to one axis has become a group, so the film restates the geography from above before returning to singles. Without it the next cuts would put attackers on unpredictable sides of frame."},
+
+  {t:233.42, inT:231.5, outT:236, title:"Cut at 03:53.4, first pass",
+   prompt:"A kick begins in one angle and finishes in another. Name the technique and say what carries across the cut.",
+   ans:"cutonaction",
+   why:"Limb position, speed and direction all continue, so the eye is tracking the movement at the exact moment the camera position changes. This is the backbone of the whole fight."},
+
+  {t:233.42, inT:231.5, outT:236, title:"Cut at 03:53.4, second pass",
+   prompt:"Play the same cut again, but this time watch where your eye is sitting on the screen before and after the join. Which second technique is also at work?",
+   ans:"eyetrace",
+   why:"The hero occupies roughly the same screen zone on both sides of the cut, so your eye does not have to hunt for him in the new angle. This travels with cut on action almost every time in a fight, which is why one cut can answer to both."},
+
+  {t:264.5, inT:262, outT:268, title:"Cut at 04:24.5",
+   prompt:"He is thrown. The movement starts over the shoulder and completes in a wider angle. Name the technique.",
+   ans:"cutonaction",
+   why:"One continuous fall split across two setups. Because the body keeps travelling in the same direction at the same speed, the change of angle vanishes inside the motion."},
+
+  {t:464.46, inT:462, outT:468, title:"Cut at 07:44.5",
+   prompt:"An overhead strike begins in the wide and lands in the close angle. Name the technique.",
+   ans:"cutonaction",
+   why:"Cutting inside the arc of the strike does two jobs. It hides the change of camera position, and it hides the fact that the blow never actually connects, so this is a safety tool as much as a grammar rule."},
+
+  {t:535, inT:530, outT:542, title:"Transition at 08:55 to 08:57",
+   prompt:"The dark alley gives way to a bright morning market. Name the technique.",
+   ans:"elliptical",
+   why:"The largest removal of time in the film. A whole night disappears because the story needs the fact that he survived, not the hours in between."},
+
+  {t:550.71, inT:545, outT:556, title:"Pattern from 09:07 to 09:13",
+   prompt:"In the market, her close up and his close up alternate. Name the pattern and compare it with the scene at 02:55.",
+   ans:"reverse",
+   why:"The same grammar as the payment argument, on a stable line, now used for the resolution instead of the conflict. Repeating a pattern at the end is how the film rhymes its beginning."}
+];
+
+/* ============================================================
+   State
+   ============================================================ */
+var state = {
+  idx: 0,
+  name: "",
+  id: "",
+  attemptId: "",
+  startedAt: "",
+  answers: TASKS.map(function(){ return {picked:null, checked:false, correct:false, just:""}; }),
+  clipEnd: null,
+  playing: false
+};
+
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v == null ? "" : v).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function shortTime(iso){
+  if(!iso) return "";
+  var d = new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  function p(n){ return String(n).padStart(2,"0"); }
+  return p(d.getDate()) + "/" + p(d.getMonth()+1) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+/* ============================================================
+   Attempt storage, device store plus optional shared database
+   ============================================================ */
+var Store = (function(){
+  var KEY = "cutdetective.attempts.v1";
+  var memory = [];
+  var remote = (CONFIG.FIREBASE_DB_URL || "").replace(/\/+$/, "");
+  var hasLocal = (function(){
+    try { window.localStorage.setItem("__cd","1"); window.localStorage.removeItem("__cd"); return true; }
+    catch(e){ return false; }
+  })();
+
+  function readLocal(){
+    if(!hasLocal) return memory.slice();
+    try { return JSON.parse(window.localStorage.getItem(KEY) || "[]"); } catch(e){ return []; }
+  }
+  function writeLocal(list){
+    if(!hasLocal){ memory = list.slice(); return; }
+    try { window.localStorage.setItem(KEY, JSON.stringify(list)); } catch(e){ memory = list.slice(); }
+  }
+  function upsertLocal(rec){
+    var list = readLocal(), found = false;
+    for(var i=0;i<list.length;i++){
+      if(list[i].attemptId === rec.attemptId){ list[i] = rec; found = true; break; }
+    }
+    if(!found) list.push(rec);
+    writeLocal(list);
+  }
+  function save(rec){
+    upsertLocal(rec);
+    if(!remote) return Promise.resolve("local");
+    return fetch(remote + "/attempts/" + encodeURIComponent(rec.attemptId) + ".json", {
+      method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(rec)
+    }).then(function(r){ return r.ok ? "synced" : "local"; }).catch(function(){ return "local"; });
+  }
+  function loadAll(){
+    if(!remote) return Promise.resolve(readLocal());
+    return fetch(remote + "/attempts.json").then(function(r){
+      if(!r.ok) throw new Error("read failed");
+      return r.json();
+    }).then(function(data){
+      var out = [];
+      if(data){ Object.keys(data).forEach(function(k){ if(data[k]) out.push(data[k]); }); }
+      return out;
+    }).catch(function(){ return readLocal(); });
+  }
+  function clearAll(){
+    writeLocal([]); memory = [];
+    if(!remote) return Promise.resolve(true);
+    return fetch(remote + "/attempts.json", {method:"DELETE"}).then(function(){ return true; }).catch(function(){ return false; });
+  }
+  return {save:save, loadAll:loadAll, clearAll:clearAll, isRemote:function(){ return !!remote; }};
+})();
+
+function makeAttemptId(){ return "a" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function currentRecord(){
+  var right = state.answers.filter(function(a){ return a.correct; }).length;
+  var done = state.answers.filter(function(a){ return a.checked; }).length;
+  return {
+    attemptId: state.attemptId, name: state.name, hctId: state.id,
+    startedAt: state.startedAt, updatedAt: new Date().toISOString(),
+    answered: done, total: TASKS.length, score: right, completed: done === TASKS.length,
+    answers: state.answers.map(function(a, i){
+      return {q:i+1, timecode:tc(TASKS[i].t), picked:a.picked || "", correctAns:TASKS[i].ans,
+              correct:!!a.correct, checked:!!a.checked, just:a.just || ""};
+    })
+  };
+}
+var saveTimer = null;
+function pushRecord(){
+  if(!state.attemptId) return;
+  $("saveDot").textContent = "saving";
+  Store.save(currentRecord()).then(function(mode){
+    $("saveDot").textContent = mode === "synced" ? "saved to class record" : "saved on this device";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){ $("saveDot").textContent = ""; }, 3000);
+  });
+}
+function tc(sec){
+  if(!isFinite(sec) || sec < 0) sec = 0;
+  var h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = Math.floor(sec%60);
+  var f = Math.floor((sec - Math.floor(sec)) * FPS);
+  function p(n){ return String(n).padStart(2,"0"); }
+  return p(h)+":"+p(m)+":"+p(s)+"."+p(f);
+}
+function techById(id){
+  for(var i=0;i<TECHNIQUES.length;i++){ if(TECHNIQUES[i].id === id) return TECHNIQUES[i]; }
+  return null;
+}
+
+/* ============================================================
+   Gate
+   ============================================================ */
+function validateGate(show){
+  var n = $("stuName").value.trim(), i = $("stuId").value.trim();
+  if(show){
+    $("fName").classList.toggle("err", n.length < 2);
+    $("fId").classList.toggle("err", i.length < 3);
+  }
+  var ok = n.length >= 2 && i.length >= 3;
+  $("btnStart").disabled = !ok;
+  return ok;
+}
+$("stuName").addEventListener("input", function(){ validateGate(false); });
+$("stuId").addEventListener("input", function(){ validateGate(false); });
+$("stuId").addEventListener("keydown", function(e){ if(e.key === "Enter") $("btnStart").click(); });
+$("stuName").addEventListener("keydown", function(e){ if(e.key === "Enter") $("stuId").focus(); });
+
+$("btnStart").addEventListener("click", function(){
+  if(!validateGate(true)) return;
+  state.name = $("stuName").value.trim();
+  state.id = $("stuId").value.trim();
+  state.attemptId = makeAttemptId();
+  state.startedAt = new Date().toISOString();
+  $("whoName").textContent = state.name;
+  $("whoId").textContent = state.id;
+  $("gate").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  render();
+  pushRecord();
+});
+validateGate(false);
+
+/* ============================================================
+   Film player
+   ============================================================ */
+var player = null, ready = false;
+var tag = document.createElement("script");
+tag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(tag);
+
+function onYouTubeIframeAPIReady(){ buildPlayer($("vidId").value.trim()); }
+
+function buildPlayer(id){
+  if(player && player.destroy) player.destroy();
+  var host = document.createElement("div");
+  host.id = "player";
+  var old = $("player");
+  old.parentNode.replaceChild(host, old);
+  ready = false;
+  player = new YT.Player("player", {
+    videoId: id,
+    playerVars: {rel:0, modestbranding:1, playsinline:1, cc_load_policy:0, iv_load_policy:3},
+    events: {
+      onReady: function(){ ready = true; $("loadmsg").style.display = "none"; },
+      onStateChange: function(e){
+        state.playing = (e.data === YT.PlayerState.PLAYING);
+        $("btnPlay").textContent = state.playing ? "Pause" : "Play";
+      }
+    }
+  });
+}
+function nowT(){ return ready ? player.getCurrentTime() - OFFSET : 0; }
+function seek(t){ if(ready) player.seekTo(Math.max(0, Math.min(t, DURATION)) + OFFSET, true); }
+
+setInterval(function(){
+  if(!ready) return;
+  var t = nowT();
+  $("tcDisplay").textContent = tc(t);
+  $("playhead").style.left = (Math.max(0,t) / DURATION * 100) + "%";
+  if(state.clipEnd !== null && t >= state.clipEnd){ player.pauseVideo(); state.clipEnd = null; }
+}, 90);
+
+$("btnPlay").addEventListener("click", function(){
+  if(!ready) return;
+  state.clipEnd = null;
+  if(state.playing) player.pauseVideo(); else player.playVideo();
+});
+$("btnBack1").addEventListener("click", function(){ if(ready){ player.pauseVideo(); seek(nowT() - 1/FPS); } });
+$("btnFwd1").addEventListener("click",  function(){ if(ready){ player.pauseVideo(); seek(nowT() + 1/FPS); } });
+$("btnBack5").addEventListener("click", function(){ seek(nowT() - 5); });
+$("btnFwd5").addEventListener("click",  function(){ seek(nowT() + 5); });
+$("btnSpeed").addEventListener("click", function(e){
+  if(!ready) return;
+  var slow = player.getPlaybackRate() !== 0.5;
+  player.setPlaybackRate(slow ? 0.5 : 1);
+  e.target.textContent = slow ? "Normal speed" : "Half speed";
+});
+$("btnApply").addEventListener("click", function(){
+  OFFSET = parseFloat($("offset").value) || 0;
+  var id = $("vidId").value.trim();
+  if(id && window.YT && YT.Player) buildPlayer(id);
+});
+
+document.addEventListener("keydown", function(e){
+  if($("app").classList.contains("hidden")) return;
+  if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  if(e.code === "Space"){ e.preventDefault(); $("btnPlay").click(); }
+  if(e.code === "ArrowLeft"){ e.preventDefault(); $("btnBack1").click(); }
+  if(e.code === "ArrowRight"){ e.preventDefault(); $("btnFwd1").click(); }
+  if(e.key === "r" || e.key === "R"){ playClip(); }
+});
+
+/* ============================================================
+   Ribbon and navigator
+   ============================================================ */
+function buildRibbon(){
+  var track = $("track");
+  CUTS.forEach(function(t){
+    var d = document.createElement("div");
+    d.className = "cutline";
+    d.style.left = (t / DURATION * 100) + "%";
+    track.appendChild(d);
+  });
+  TASKS.forEach(function(task, i){
+    var f = document.createElement("div");
+    f.className = "taskflag";
+    f.dataset.i = i;
+    f.style.left = (task.t / DURATION * 100) + "%";
+    f.title = "Question " + (i+1) + ", " + task.title;
+    f.addEventListener("click", function(ev){ ev.stopPropagation(); goTo(i); });
+    track.appendChild(f);
+  });
+  track.addEventListener("click", function(ev){
+    var r = track.getBoundingClientRect();
+    seek((ev.clientX - r.left) / r.width * DURATION);
+  });
+}
+function buildNavStrip(){
+  var s = $("navStrip");
+  TASKS.forEach(function(task, i){
+    var b = document.createElement("button");
+    b.className = "navdot";
+    b.dataset.i = i;
+    b.textContent = i + 1;
+    b.title = task.title;
+    b.addEventListener("click", function(){ goTo(i); });
+    s.appendChild(b);
+  });
+}
+function refreshMarkers(){
+  var dots = document.querySelectorAll(".navdot");
+  for(var i=0;i<dots.length;i++){
+    var n = +dots[i].dataset.i, a = state.answers[n];
+    dots[i].classList.toggle("current", n === state.idx);
+    dots[i].classList.toggle("ok", a.checked && a.correct);
+    dots[i].classList.toggle("no", a.checked && !a.correct);
+  }
+  var flags = document.querySelectorAll(".taskflag");
+  for(var j=0;j<flags.length;j++){
+    var m = +flags[j].dataset.i;
+    flags[j].classList.toggle("done", state.answers[m].checked);
+    flags[j].classList.toggle("active", m === state.idx);
+  }
+}
+
+/* ============================================================
+   Reference gallery
+   ============================================================ */
+function buildRef(){
+  var g = $("refGrid");
+  TECHNIQUES.forEach(function(t){
+    var card = document.createElement("article");
+    card.className = "refcard";
+    card.id = "ref-" + t.id;
+    var tag = t.inFilm
+      ? '<span class="tag">Used in the film</span>'
+      : '<span class="tag absent">Not used in this film</span>';
+    card.innerHTML =
+      '<video controls preload="metadata" playsinline src="assets/videos/' + t.clip + '.mp4"></video>' +
+      '<div class="rbody">' +
+        '<h3><span class="dot" style="background:' + t.color + '"></span>' + t.name + '</h3>' +
+        '<p>' + t.def + '</p>' + tag +
+      '</div>';
+    g.appendChild(card);
+  });
+}
+function pauseAllRefVideos(){
+  var vs = document.querySelectorAll("#refGrid video");
+  for(var i=0;i<vs.length;i++){ vs[i].pause(); }
+}
+
+/* ============================================================
+   Questions
+   ============================================================ */
+function buildChips(){
+  var box = $("chips");
+  box.innerHTML = "";
+  TECHNIQUES.forEach(function(t){
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.dataset.id = t.id;
+    b.setAttribute("aria-pressed","false");
+    b.innerHTML = '<span class="dot" style="background:'+t.color+'"></span><span>'+t.name+'</span>';
+    b.addEventListener("click", function(){ pick(t.id); });
+    box.appendChild(b);
+  });
+}
+function pick(id){
+  var a = state.answers[state.idx];
+  if(a.checked) return;
+  a.picked = id;
+  render();
+}
+function saveJust(){
+  var a = state.answers[state.idx];
+  if(!a.checked) a.just = $("just").value;
+}
+function goTo(i){
+  saveJust();
+  state.idx = Math.max(0, Math.min(i, TASKS.length - 1));
+  showView("activity");
+  render();
+  playClip();
+}
+function playClip(){
+  if(!ready) return;
+  var task = TASKS[state.idx];
+  state.clipEnd = task.outT;
+  player.seekTo(task.inT + OFFSET, true);
+  player.playVideo();
+}
+
+function render(){
+  var task = TASKS[state.idx], a = state.answers[state.idx];
+
+  $("qEyebrow").textContent = "Question " + (state.idx+1) + " of " + TASKS.length;
+  $("qTitle").textContent = task.title;
+  $("qPrompt").textContent = task.prompt;
+  $("qLocked").classList.toggle("hidden", !a.checked);
+
+  $("just").value = a.just;
+  $("just").disabled = a.checked;
+  $("charCount").textContent = a.just.length + " characters";
+
+  var chips = document.querySelectorAll(".chip");
+  for(var i=0;i<chips.length;i++){
+    var c = chips[i], id = c.dataset.id;
+    c.setAttribute("aria-pressed", String(a.picked === id));
+    c.disabled = a.checked;
+    c.classList.remove("right","wrong");
+    if(a.checked){
+      if(id === task.ans) c.classList.add("right");
+      else if(id === a.picked) c.classList.add("wrong");
+    }
+  }
+
+  $("btnCheck").disabled = a.checked || !a.picked;
+  $("btnCheck").textContent = a.checked ? "Submitted" : "Submit answer";
+  $("btnPrev").disabled = state.idx === 0;
+  $("btnNext").disabled = state.idx === TASKS.length - 1;
+
+  var v = $("verdict");
+  if(a.checked){
+    var t = techById(task.ans);
+    v.classList.remove("hidden");
+    v.classList.toggle("miss", !a.correct);
+    $("vHead").textContent = a.correct ? "Correct. " + t.name : "Not quite. The answer is " + t.name;
+    $("vBody").textContent = task.why;
+    $("vClip").innerHTML =
+      '<p class="cliplabel">Watch the technique again</p>' +
+      '<video controls preload="none" playsinline src="assets/videos/' + t.clip + '.mp4"></video>';
+  } else {
+    v.classList.add("hidden");
+    $("vClip").innerHTML = "";
+  }
+
+  var done = state.answers.filter(function(x){ return x.checked; }).length;
+  var right = state.answers.filter(function(x){ return x.correct; }).length;
+  $("scorePill").textContent = done < TASKS.length
+    ? done + " of " + TASKS.length + " answered"
+    : right + " / " + TASKS.length + " correct";
+
+  refreshMarkers();
+  renderResults();
+}
+
+$("btnClip").addEventListener("click", playClip);
+$("btnClipAgain").addEventListener("click", playClip);
+$("just").addEventListener("input", function(){
+  saveJust();
+  $("charCount").textContent = $("just").value.length + " characters";
+});
+$("btnCheck").addEventListener("click", function(){
+  var a = state.answers[state.idx];
+  if(!a.picked || a.checked) return;
+  saveJust();
+  a.checked = true;
+  a.correct = (a.picked === TASKS[state.idx].ans);
+  render();
+  pushRecord();
+  $("verdict").scrollIntoView({behavior:"smooth", block:"nearest"});
+});
+$("btnNext").addEventListener("click", function(){ goTo(state.idx + 1); });
+$("btnPrev").addEventListener("click", function(){ goTo(state.idx - 1); });
+
+/* ============================================================
+   Results
+   ============================================================ */
+function renderResults(){
+  var done = state.answers.filter(function(x){ return x.checked; }).length;
+  var right = state.answers.filter(function(x){ return x.correct; }).length;
+  $("resBig").textContent = right + " / " + TASKS.length;
+  $("resTitle").textContent = done === TASKS.length ? "All questions answered" : "Your results so far";
+  $("resNote").textContent = done === TASKS.length
+    ? "Your work has been recorded for your instructor. Export the CSV as well if you were asked to hand one in."
+    : (TASKS.length - done) + " questions still to answer.";
+  $("btnExport").disabled = done === 0;
+
+  var body = $("resBody");
+  body.innerHTML = "";
+  TASKS.forEach(function(task, i){
+    var a = state.answers[i];
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="tcell">' + (i+1) + '</td>' +
+      '<td class="tcell">' + tc(task.t) + '</td>' +
+      '<td>' + (a.picked ? techById(a.picked).name : "<span style='color:#5A6188'>not answered</span>") + '</td>' +
+      '<td>' + (a.checked ? techById(task.ans).name : "<span style='color:#5A6188'>hidden</span>") + '</td>' +
+      '<td>' + (a.checked ? (a.correct ? '<span class="pillok">Correct</span>' : '<span class="pillno">Incorrect</span>') : "") + '</td>' +
+      '<td>' + (a.just ? a.just.replace(/</g,"&lt;") : "") + '</td>';
+    body.appendChild(tr);
+  });
+}
+
+function csvCell(v){ return '"' + String(v == null ? "" : v).replace(/"/g,'""') + '"'; }
+function downloadCsv(filename, rows){
+  var text = rows.map(function(r){ return r.map(csvCell).join(","); }).join("\r\n");
+  var blob = new Blob(["\uFEFF" + text], {type:"text/csv;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+$("btnExport").addEventListener("click", function(){
+  saveJust();
+  var rows = [
+    ["Cut Detective, continuity editing lab"],
+    ["Student", state.name, "HCT ID", state.id, "Exported", new Date().toISOString().slice(0,19).replace("T"," ")],
+    [],
+    ["Question","Timecode","Passage","Student answer","Correct answer","Result","Student explanation"]
+  ];
+  TASKS.forEach(function(t, i){
+    var a = state.answers[i];
+    rows.push([
+      i+1, tc(t.t), t.title,
+      a.picked ? techById(a.picked).name : "",
+      techById(t.ans).name,
+      a.checked ? (a.correct ? "Correct" : "Incorrect") : "Not answered",
+      a.just
+    ]);
+  });
+  var right = state.answers.filter(function(x){ return x.correct; }).length;
+  rows.push([], ["Score", right + " out of " + TASKS.length]);
+  downloadCsv("cut-detective-" + (state.id || "student").replace(/[^a-z0-9]+/gi,"-").toLowerCase() + ".csv", rows);
+  pushRecord();
+});
+
+/* ============================================================
+   Views
+   ============================================================ */
+function showView(which){
+  var map = {activity:["viewActivity","navActivity"], reference:["viewRef","navRef"], results:["viewResults","navResults"]};
+  Object.keys(map).forEach(function(k){
+    var on = (k === which);
+    $(map[k][0]).classList.toggle("hidden", !on);
+    if(on) $(map[k][1]).setAttribute("aria-current","page");
+    else $(map[k][1]).removeAttribute("aria-current");
+  });
+  if(which !== "reference") pauseAllRefVideos();
+  if(which !== "activity" && ready) player.pauseVideo();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+$("navActivity").addEventListener("click", function(){ showView("activity"); });
+$("navRef").addEventListener("click", function(){ showView("reference"); });
+$("navResults").addEventListener("click", function(){ showView("results"); });
+
+
+/* ============================================================
+   Instructor dashboard
+   ============================================================ */
+var admin = { rows: [], open: {}, timer: null };
+
+function openPin(){
+  $("gate").classList.add("hidden");
+  $("app").classList.add("hidden");
+  $("admin").classList.add("hidden");
+  $("pinScreen").classList.remove("hidden");
+  $("pinErr").textContent = "";
+  $("pinInput").value = "";
+  setTimeout(function(){ $("pinInput").focus(); }, 50);
+}
+function backToStudent(){
+  $("pinScreen").classList.add("hidden");
+  $("admin").classList.add("hidden");
+  stopAuto();
+  if(state.attemptId) $("app").classList.remove("hidden");
+  else $("gate").classList.remove("hidden");
+}
+$("lnkAdmin").addEventListener("click", function(e){ e.preventDefault(); openPin(); });
+$("lnkAdmin2").addEventListener("click", function(e){ e.preventDefault(); openPin(); });
+$("lnkBackStudent").addEventListener("click", function(e){ e.preventDefault(); backToStudent(); });
+$("btnExit").addEventListener("click", backToStudent);
+$("pinInput").addEventListener("keydown", function(e){ if(e.key === "Enter") $("btnPin").click(); });
+
+$("btnPin").addEventListener("click", function(){
+  if($("pinInput").value.trim() !== CONFIG.ADMIN_PIN){
+    $("pinErr").textContent = "That PIN is not correct.";
+    $("pinInput").value = "";
+    $("pinInput").focus();
+    return;
+  }
+  $("pinScreen").classList.add("hidden");
+  $("admin").classList.remove("hidden");
+  $("adminStore").textContent = Store.isRemote() ? "Shared class record" : "This device only";
+  var b = $("adminBanner");
+  if(Store.isRemote()){
+    b.classList.add("hidden");
+  } else {
+    b.classList.remove("hidden");
+    b.innerHTML = "<b>Device only mode.</b> No shared database is configured, so this dashboard shows attempts made on this computer and browser. To collect a whole class in one place, set FIREBASE_DB_URL near the top of the script block in index.html.";
+  }
+  loadAdmin();
+  startAuto();
+});
+
+function startAuto(){
+  stopAuto();
+  if($("autoRefresh").checked) admin.timer = setInterval(loadAdmin, 20000);
+}
+function stopAuto(){ if(admin.timer){ clearInterval(admin.timer); admin.timer = null; } }
+$("autoRefresh").addEventListener("change", startAuto);
+$("btnRefresh").addEventListener("click", loadAdmin);
+$("adminSearch").addEventListener("input", renderAdmin);
+
+function loadAdmin(){
+  Store.loadAll().then(function(list){
+    list.sort(function(a,b){ return String(b.updatedAt).localeCompare(String(a.updatedAt)); });
+    admin.rows = list;
+    var d = new Date();
+    function p(n){ return String(n).padStart(2,"0"); }
+    $("lastSync").textContent = "Updated " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+    renderAdmin();
+  });
+}
+
+function renderAdmin(){
+  var q = $("adminSearch").value.trim().toLowerCase();
+
+  var tries = {};
+  admin.rows.slice().sort(function(a,b){ return String(a.startedAt).localeCompare(String(b.startedAt)); })
+    .forEach(function(r){
+      var k = String(r.hctId).toLowerCase();
+      tries[k] = (tries[k] || 0) + 1;
+      r._try = tries[k];
+    });
+
+  var students = {}, done = 0, scoreSum = 0, scoreN = 0;
+  admin.rows.forEach(function(r){
+    students[String(r.hctId).toLowerCase()] = true;
+    if(r.completed){ done++; scoreSum += (r.score || 0); scoreN++; }
+  });
+  $("stAttempts").textContent = admin.rows.length;
+  $("stStudents").textContent = Object.keys(students).length;
+  $("stDone").textContent = done;
+  $("stAvg").textContent = scoreN ? (scoreSum / scoreN).toFixed(1) : "0";
+
+  var perQ = TASKS.map(function(){ return {n:0, ok:0}; });
+  admin.rows.forEach(function(r){
+    (r.answers || []).forEach(function(a, i){
+      if(a && a.checked && perQ[i]){ perQ[i].n++; if(a.correct) perQ[i].ok++; }
+    });
+  });
+  var worst = -1, worstPct = 200;
+  perQ.forEach(function(p, i){
+    if(p.n >= 1){
+      var pct = p.ok / p.n * 100;
+      if(pct < worstPct){ worstPct = pct; worst = i; }
+    }
+  });
+  $("stHard").textContent = worst >= 0 ? "Q" + (worst + 1) : ".";
+
+  var bl = $("barList");
+  bl.innerHTML = "";
+  perQ.forEach(function(p, i){
+    var pct = p.n ? Math.round(p.ok / p.n * 100) : 0;
+    var div = document.createElement("div");
+    div.className = "bar" + (p.n && pct < 50 ? " weak" : "");
+    div.innerHTML = '<div class="lab"><span>Q' + (i+1) + '</span><span>' +
+      (p.n ? pct + "% of " + p.n : "no data") + '</span></div>' +
+      '<div class="rail"><div class="fill" style="width:' + pct + '%"></div></div>';
+    bl.appendChild(div);
+  });
+
+  var rows = admin.rows.filter(function(r){
+    if(!q) return true;
+    return (String(r.name) + " " + String(r.hctId)).toLowerCase().indexOf(q) !== -1;
+  });
+
+  var body = $("adminBody");
+  body.innerHTML = "";
+  if(!rows.length){
+    body.innerHTML = '<tr><td colspan="8"><div class="emptynote">No attempts yet. As students work, their answers appear here.</div></td></tr>';
+    return;
+  }
+  rows.forEach(function(r){
+    var tr = document.createElement("tr");
+    tr.className = "attempt";
+    tr.innerHTML =
+      '<td><b>' + esc(r.name) + '</b></td>' +
+      '<td class="tcell">' + esc(r.hctId) + '</td>' +
+      '<td class="tcell">' + (r._try || 1) + '</td>' +
+      '<td class="tcell">' + shortTime(r.startedAt) + '</td>' +
+      '<td class="tcell">' + shortTime(r.updatedAt) + '</td>' +
+      '<td class="tcell">' + (r.answered || 0) + ' / ' + (r.total || TASKS.length) + '</td>' +
+      '<td class="tcell"><b>' + (r.score || 0) + '</b></td>' +
+      '<td>' + (r.completed ? '<span class="pillok">Finished</span>' : '<span class="pillwait">In progress</span>') + '</td>';
+    tr.addEventListener("click", function(){
+      admin.open[r.attemptId] = !admin.open[r.attemptId];
+      renderAdmin();
+    });
+    body.appendChild(tr);
+
+    if(admin.open[r.attemptId]){
+      var dt = document.createElement("tr");
+      dt.className = "detail";
+      var lines = (r.answers || []).map(function(a, i){
+        var pickedTech = a.picked ? techById(a.picked) : null;
+        var pickedName = pickedTech ? pickedTech.name : (a.picked || "not answered");
+        var corrTech = techById(a.correctAns);
+        var corrName = corrTech ? corrTech.name : a.correctAns;
+        var pill = a.checked
+          ? (a.correct ? '<span class="pillok">Correct</span>' : '<span class="pillno">Incorrect</span>')
+          : '<span class="pillwait">Open</span>';
+        return '<div class="qline"><div class="qtop"><span class="qn">Q' + (i+1) + '</span>' + pill +
+               '<span>' + esc(pickedName) + '</span>' +
+               (a.checked && !a.correct ? '<span style="color:var(--muted)">answer: ' + esc(corrName) + '</span>' : '') +
+               '</div>' + (a.just ? '<div class="qj">' + esc(a.just) + '</div>' : '') + '</div>';
+      }).join("");
+      dt.innerHTML = '<td colspan="8"><div class="detailbox"><h4>' + esc(r.name) + ', attempt ' + (r._try || 1) + '</h4>' + lines + '</div></td>';
+      body.appendChild(dt);
+    }
+  });
+}
+
+$("btnExportAll").addEventListener("click", function(){
+  var rows = [
+    ["Cut Detective, class record"],
+    ["Exported", new Date().toISOString().slice(0,19).replace("T"," "), "Attempts", admin.rows.length],
+    [],
+    ["Student","HCT ID","Attempt","Started","Last activity","Answered","Score","Status","Question","Timecode","Student answer","Correct answer","Result","Student explanation"]
+  ];
+  admin.rows.forEach(function(r){
+    (r.answers || []).forEach(function(a, i){
+      var pt = a.picked ? techById(a.picked) : null;
+      var ct = techById(a.correctAns);
+      rows.push([
+        r.name, r.hctId, r._try || 1, r.startedAt, r.updatedAt, r.answered, r.score,
+        r.completed ? "Finished" : "In progress",
+        i+1, a.timecode, pt ? pt.name : "", ct ? ct.name : a.correctAns,
+        a.checked ? (a.correct ? "Correct" : "Incorrect") : "Not answered",
+        a.just
+      ]);
+    });
+  });
+  downloadCsv("cut-detective-class-record.csv", rows);
+});
+
+$("btnClearAll").addEventListener("click", function(){
+  if(!confirm("Delete every recorded attempt? This cannot be undone.")) return;
+  Store.clearAll().then(function(){ loadAdmin(); });
+});
+
+/* ============================================================
+   Init
+   ============================================================ */
+buildRibbon();
+buildNavStrip();
+buildRef();
+buildChips();
+render();
+if(window.location.hash === "#instructor") openPin();
+</script>
+</body>
+</html>
