@@ -97,7 +97,8 @@ button{font-family:inherit}
 
 /* ---------------- player ---------------- */
 .stage{background:#000;border-radius:var(--r);position:relative;overflow:hidden;aspect-ratio:16/9}
-.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.stage video,.stage #ytwrap{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.stage #ytwrap iframe{width:100%;height:100%;border:0;display:block}
 .loadmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#C9CEEA;font-size:13px;text-align:center;padding:24px}
 .transport{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:12px}
 .tbtn{font-family:var(--mono);font-size:12px;padding:8px 12px;border:1px solid var(--line);background:var(--paper);border-radius:var(--r);cursor:pointer;color:var(--ink)}
@@ -169,6 +170,25 @@ textarea:disabled{opacity:.75;background:#F0F2F9}
 
 /* ---------------- reference gallery ---------------- */
 .refintro{margin:0 0 18px;font-size:14px;color:var(--muted);max-width:80ch}
+
+/* ---------------- part 2, quiz ---------------- */
+.quizwrap{max-width:820px;margin:0 auto}
+.quizhead{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.quizhead .lead{margin:0;font-size:14px;color:var(--muted);flex:1;min-width:260px}
+.quizopts{margin:6px 0 0}
+.quizopt{
+  display:block;width:100%;text-align:left;font-family:var(--sans);font-size:14px;line-height:1.5;
+  padding:12px 14px;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--paper);cursor:pointer;color:var(--ink);
+}
+.quizopt:hover:not(:disabled){border-color:var(--am-blue);background:#F7F9FF}
+.quizopt[aria-pressed=true]{border-color:var(--am-blue);border-width:2px;background:#E9EDFB;font-weight:700;padding:11px 13px}
+.quizopt:disabled{cursor:default;opacity:.55}
+.quizopt.right{border-color:var(--green);border-width:2px;background:rgba(71,215,172,.18);opacity:1;font-weight:700;padding:11px 13px}
+.quizopt.wrong{border-color:var(--flag);border-width:2px;background:#FBEDEE;opacity:1;padding:11px 13px}
+.quizopt .key{font-family:var(--mono);font-size:12px;color:var(--muted);margin-right:10px}
+.quizopt.right .key,.quizopt.wrong .key{color:inherit}
+
 .refgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
 .refcard{background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
 .refcard video{width:100%;display:block;background:#000;aspect-ratio:16/9}
@@ -268,6 +288,24 @@ tr.detail td{background:var(--mist);padding:0}
 .emptynote{padding:40px 20px;text-align:center;color:var(--muted);font-size:13.5px}
 .banner{background:#FBF1DC;border:1px solid #E8D3A8;color:#7A5A15;border-radius:8px;padding:12px 16px;font-size:12.5px;line-height:1.6;margin-bottom:16px}
 .banner b{color:#5C440F}
+details.dbpanel{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:18px}
+details.dbpanel summary{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+details.dbpanel summary:hover{color:var(--am-blue)}
+.dbstatus{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;margin-top:14px}
+.dbstatus .led{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.dbstatus.on .led{background:var(--green)}
+.dbstatus.off .led{background:var(--flag)}
+.dbrow{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:12px}
+.dbrow label{font-size:11px;font-weight:700;display:block;margin-bottom:5px}
+.dbrow input{font-family:var(--mono);font-size:12.5px;padding:9px 11px;border:1px solid var(--line);border-radius:var(--r);background:var(--mist);min-width:340px;flex:1}
+.dbmsg{font-size:12.5px;margin-top:10px;min-height:18px;line-height:1.6}
+.dbmsg.ok{color:#0B6B52}
+.dbmsg.bad{color:var(--flag)}
+pre.snip{background:var(--ink);color:#D7DCF5;font-family:var(--mono);font-size:11.5px;line-height:1.6;padding:12px 14px;border-radius:var(--r);overflow-x:auto;margin:10px 0 0;white-space:pre}
+pre.snip b{color:var(--green);font-weight:400}
+.dbsteps{font-size:12.5px;color:var(--muted);line-height:1.75;margin:14px 0 0;padding-left:20px}
+.dbsteps li{margin-bottom:4px}
+.dbsteps b{color:var(--ink)}
 
 @media print{.topbar,.adminbar,.toolrow,.stage,.transport,.ribbonwrap,.navstrip,.replayrow,.actions,.chips{display:none}.cols{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
@@ -311,7 +349,8 @@ tr.detail td{background:var(--mist);padding:0}
   <div class="topbar">
     <div class="mark">Cut <span>Detective</span></div>
     <nav class="navtabs">
-      <button class="navbtn" id="navActivity" aria-current="page">Activity</button>
+      <button class="navbtn" id="navActivity" aria-current="page">Part 1. Identify</button>
+      <button class="navbtn" id="navQuiz">Part 2. Quiz</button>
       <button class="navbtn" id="navRef">Technique reference</button>
       <button class="navbtn" id="navResults">Results</button>
     </nav>
@@ -328,7 +367,8 @@ tr.detail td{background:var(--mist);padding:0}
 
       <section class="panel">
         <div class="stage">
-          <video id="film" preload="metadata" playsinline src="assets/videos/night-shift.mp4"></video>
+          <video id="film" class="hidden" preload="metadata" playsinline></video>
+          <div id="ytwrap" class="hidden"><div id="ytplayer"></div></div>
           <div class="loadmsg" id="loadmsg">Loading the film.</div>
         </div>
 
@@ -397,14 +437,47 @@ tr.detail td{background:var(--mist);padding:0}
     <details class="setup">
       <summary>Keyboard shortcuts</summary>
       <p class="setupnote" style="margin-top:12px">
-        Spacebar plays and pauses. Left and right arrows step one frame at a time, which is how you check whether an
-        action really does carry across a cut. R replays the current question from the start. All timecodes are read
-        straight from the film at 24 frames per second, so what the readout says is what the frame is.
+        Spacebar plays and pauses. Left and right arrows step through the film a frame at a time, which is how you
+        check whether an action really does carry across a cut. R replays the current question from the start.
+        Stepping is exact when the film plays from this site, and lands within a few frames when it streams.
       </p>
     </details>
   </main>
 
   <!-- ---------- REFERENCE ---------- -->
+  <main class="page hidden" id="viewQuiz">
+    <div class="quizwrap">
+      <div class="quizhead">
+        <p class="lead">Ten questions on the history of editing lecture. Choose an answer and submit. Answers lock once submitted, and the reason appears either way.</p>
+        <span class="scorepill" id="quizPill">0 of 10 answered</span>
+      </div>
+
+      <div class="navstrip" id="quizStrip"></div>
+
+      <div class="panel">
+        <div class="qhead">
+          <p class="eyebrow" id="quizEyebrow">Question 1 of 10</p>
+          <span class="locked hidden" id="quizLocked">Answer locked</span>
+        </div>
+        <h3 class="qtitle" id="quizPrompt">Loading</h3>
+
+        <div class="quizopts" id="quizOpts"></div>
+
+        <div class="actions">
+          <button class="btn ghost" id="btnQuizPrev">Back</button>
+          <div class="spacer"></div>
+          <button class="btn" id="btnQuizCheck" disabled>Submit answer</button>
+          <button class="btn" id="btnQuizNext">Next</button>
+        </div>
+
+        <div class="verdict hidden" id="quizVerdict">
+          <div class="vhead" id="quizVHead"></div>
+          <div class="vbody" id="quizVBody"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
   <main class="page hidden" id="viewRef">
     <p class="refintro">
       Eleven techniques, each with the clip that defines it. Watch these before you start, and come back to any of them
@@ -417,20 +490,29 @@ tr.detail td{background:var(--mist);padding:0}
   <!-- ---------- RESULTS ---------- -->
   <main class="page hidden" id="viewResults">
     <div class="resulthead">
-      <div><div class="big" id="resBig">0 / 15</div></div>
+      <div><div class="big" id="resBig">0 / 25</div></div>
       <div>
         <h2 id="resTitle">Your results</h2>
-        <p id="resNote">Answer every question, then export the CSV and submit that file.</p>
+        <p id="resNote">Finish both parts, then export the CSV.</p>
+        <p id="resSplit" style="font-family:var(--mono);font-size:12px;color:#9AA3CE;margin-top:6px"></p>
       </div>
       <div class="acts">
         <button class="btn" id="btnExport">Export CSV</button>
         <button class="btn ghost" id="btnFinish">Finish and return to start</button>
       </div>
     </div>
+    <h2 style="font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:400;margin:0 0 8px">Part 1, identify</h2>
     <div class="panel" style="padding:0;overflow-x:auto">
       <table>
         <thead><tr><th style="width:34px">#</th><th style="width:92px">Timecode</th><th style="width:150px">Your answer</th><th style="width:150px">Correct answer</th><th style="width:86px">Result</th><th>Your explanation</th></tr></thead>
         <tbody id="resBody"></tbody>
+      </table>
+    </div>
+    <h2 style="font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:400;margin:22px 0 8px">Part 2, history of editing quiz</h2>
+    <div class="panel" style="padding:0;overflow-x:auto">
+      <table>
+        <thead><tr><th style="width:34px">#</th><th>Question</th><th style="width:86px">Result</th><th style="width:230px">Your answer</th></tr></thead>
+        <tbody id="resBody2"></tbody>
       </table>
     </div>
   </main>
@@ -471,11 +553,98 @@ tr.detail td{background:var(--mist);padding:0}
   <div class="page">
     <div class="banner hidden" id="adminBanner"></div>
 
+    <details class="dbpanel" id="filmPanel">
+      <summary>Film source</summary>
+
+      <div class="dbstatus" id="filmStatus"><span class="led"></span><span id="filmStatusText">Checking</span></div>
+
+      <div class="dbrow">
+        <div>
+          <label for="filmSource">Where the film plays from</label>
+          <select id="filmSource" style="font-family:var(--sans);font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:var(--r);background:var(--mist);min-width:220px">
+            <option value="youtube">Streaming link</option>
+            <option value="file">File in this repository</option>
+          </select>
+        </div>
+        <div>
+          <label for="filmId">Video ID or link</label>
+          <input id="filmId" type="text" spellcheck="false" style="min-width:260px" placeholder="syPO8e36YSI">
+        </div>
+        <div>
+          <label for="filmOffset">Offset, seconds</label>
+          <input id="filmOffset" type="number" step="0.1" style="min-width:110px" value="0">
+        </div>
+        <button class="btn small" id="btnFilmUse">Apply on this computer</button>
+        <button class="btn small danger" id="btnFilmForget">Reset</button>
+      </div>
+      <div class="dbmsg" id="filmMsg"></div>
+
+      <ol class="dbsteps">
+        <li>Paste the video ID or the full link. Both work, the ID is pulled out of a link automatically.</li>
+        <li>Press <b>Apply on this computer</b>, go back to the activity, and play question 1.</li>
+        <li>Watch the timecode readout. The first cut of the film must land at <b>01:18.9</b>. If the copy runs early or late, put the difference in the offset box and apply again. Every question and every ribbon mark shifts together.</li>
+        <li>When it lines up, paste the lines below into the <b>CONFIG</b> block at the top of the script in index.html and push to GitHub, or your students will still be watching whatever the file says.</li>
+      </ol>
+
+      <pre class="snip" id="filmLines">FILM_SOURCE: "youtube",
+FILM_YOUTUBE_ID: "",
+FILM_OFFSET: 0</pre>
+
+      <p class="setupnote">
+        Streaming keeps the repository small and needs an open connection. The bundled file works on a locked down lab
+        network and steps exactly one frame at a time, which matters for the cut on action questions. If you settle on
+        streaming you can delete assets/videos/night-shift.mp4 and save 37 MB.
+      </p>
+    </details>
+
+    <details class="dbpanel" id="dbPanel">
+      <summary>Class database connection</summary>
+
+      <div class="dbstatus" id="dbStatus"><span class="led"></span><span id="dbStatusText">Checking</span></div>
+
+      <div class="dbrow">
+        <div style="flex:1;min-width:340px">
+          <label for="dbUrl">Realtime Database URL</label>
+          <input id="dbUrl" type="text" placeholder="https://your-project-default-rtdb.firebaseio.com" spellcheck="false">
+        </div>
+        <button class="btn small" id="btnDbTest">Test connection</button>
+        <button class="btn small ghost" id="btnDbUse">Use on this computer</button>
+        <button class="btn small danger" id="btnDbForget">Forget</button>
+      </div>
+      <div class="dbmsg" id="dbMsg"></div>
+
+      <ol class="dbsteps">
+        <li>Open the Firebase console and create a project. Analytics can be skipped.</li>
+        <li>Go to <b>Build, Realtime Database, Create Database</b>. Pick the region closest to you.</li>
+        <li>Copy the URL shown at the top of the database, then paste it in the box above and press Test connection.</li>
+        <li>Open the <b>Rules</b> tab, replace what is there with the block below, and press Publish. Do not leave it in test mode, those rules stop working after thirty days and every save will silently fall back to the device.</li>
+        <li>Once the test passes, paste the line below into <b>index.html</b> so every student writes to the same place, then push to GitHub.</li>
+      </ol>
+
+      <pre class="snip" id="dbRules">{
+  "rules": {
+    "attempts": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}</pre>
+
+      <pre class="snip" id="dbLine">FIREBASE_DB_URL: ""</pre>
+
+      <p class="setupnote">
+        These rules let anyone who knows the URL read, write and delete the attempts node. That is the trade for having
+        no student sign in. This app stores only names, HCT IDs, answers and scores, so keep it to that, and empty the
+        node at the end of each semester. Nothing else in the database is exposed, because the rules cover the attempts
+        node alone.
+      </p>
+    </details>
+
     <div class="statgrid">
       <div class="stat"><div class="n" id="stAttempts">0</div><div class="k">Attempts recorded</div></div>
       <div class="stat"><div class="n" id="stStudents">0</div><div class="k">Individual students</div></div>
       <div class="stat"><div class="n" id="stDone">0</div><div class="k">Finished all fifteen</div></div>
-      <div class="stat accent"><div class="n" id="stAvg">0</div><div class="k">Average score out of 15</div></div>
+      <div class="stat accent"><div class="n" id="stAvg">0</div><div class="k">Average total out of 25</div></div>
       <div class="stat"><div class="n" id="stHard">.</div><div class="k">Most missed question</div></div>
     </div>
 
@@ -490,7 +659,7 @@ tr.detail td{background:var(--mist);padding:0}
           <table>
             <thead><tr>
               <th>Student</th><th>HCT ID</th><th style="width:56px">Try</th><th style="width:112px">Started</th>
-              <th style="width:112px">Last activity</th><th style="width:86px">Progress</th><th style="width:64px">Score</th><th style="width:96px">Status</th><th style="width:44px"></th>
+              <th style="width:112px">Last activity</th><th style="width:86px">Part 1</th><th style="width:82px">Part 2</th><th style="width:66px">Total</th><th style="width:96px">Status</th><th style="width:44px"></th>
             </tr></thead>
             <tbody id="adminBody"></tbody>
           </table>
@@ -513,6 +682,16 @@ tr.detail td{background:var(--mist);padding:0}
    ============================================================ */
 var CONFIG = {
   ADMIN_PIN: "1682",
+
+  /* Where the film comes from.
+     "youtube" streams from FILM_YOUTUBE_ID, "file" plays FILM_FILE out of this repository. */
+  FILM_SOURCE: "youtube",
+  FILM_YOUTUBE_ID: "syPO8e36YSI",
+  FILM_FILE: "assets/videos/night-shift.mp4",
+  /* Seconds to add to every question time if the chosen copy runs early or late.
+     The bundled file needs 0. Check any streaming copy against the first cut at 01:18.9. */
+  FILM_OFFSET: 0,
+
   /* Leave FIREBASE_DB_URL empty to record attempts on the device only.
      Fill it in to collect the whole class in one place, for example
      "https://your-project-default-rtdb.firebaseio.com" with no trailing slash. */
@@ -560,6 +739,76 @@ var TECHNIQUES = [
   {id:"insert", name:"Insert Shot", color:"var(--t-insert)", clip:"insert-shot",
    def:"A close shot of a specific prop or detail inside a scene you have already established. It magnifies, it does not relocate.",
    inFilm:true}
+];
+
+var QUIZ = [
+  {q:"How were the earliest films made and shown?",
+   opts:["As a single long static shot with no editing and no story",
+         "As short scenes cut rapidly between several camera angles",
+         "As silent films with printed title cards between every shot",
+         "As synchronised picture and sound from the beginning"],
+   ans:0,
+   why:"Early films were one long static shot. Capturing movement was enough to hold an audience, and the film simply ran until the stock in the camera ran out. There was no narrative and no editing at all."},
+
+  {q:"The Lumiere brothers' cinematograph shot at a frame rate that stayed the industry standard for twenty five years. What was it?",
+   opts:["12 frames per second","16 frames per second","24 frames per second","48 frames per second"],
+   ans:1,
+   why:"The cinematograph recorded and projected at 16 frames per second, and that rate held as the standard for the next twenty five years. Auguste and Louis Lumiere began making moving images in 1892, and Arrival of a Train at La Ciotat followed in 1895."},
+
+  {q:"Edwin S. Porter directed over 250 films. Which company did he work for?",
+   opts:["Warner Brothers","The Lumiere brothers' company","Thomas Edison's company","Vitaphone"],
+   ans:2,
+   why:"Porter was an American pioneer who directed for Thomas Edison's company. His best known titles are Life of an American Fireman and The Great Train Robbery, both from 1903."},
+
+  {q:"Which two films from 1903 is Edwin S. Porter best known for?",
+   opts:["The Birth of a Nation and Intolerance",
+         "Life of an American Fireman and The Great Train Robbery",
+         "Battleship Potemkin and Weekend",
+         "The Jazz Singer and Breathless"],
+   ans:1,
+   why:"Both came out in 1903 and both are Porter's. The other options belong to Griffith, to the Soviet montage and French New Wave movements, and to the arrival of sound."},
+
+  {q:"Which 1915 D.W. Griffith film pushed camera and narrative technique forward and helped make feature length films dominant in the United States?",
+   opts:["Intolerance","The Great Train Robbery","The Birth of a Nation","The Jazz Singer"],
+   ans:2,
+   why:"The Birth of a Nation was released in 1915, and Intolerance was its follow up. Its popularity is what pushed American cinema towards feature length films."},
+
+  {q:"Continuity editing is also known by another name in the lecture. Which one?",
+   opts:["Montage editing","Seamless or invisible editing","Linear editing","Non-linear editing"],
+   ans:1,
+   why:"Seamless editing, also called invisible editing, matches cuts to the action so the audience watches without noticing the edits. The goal is a clear and coherent flow, so the story unfolds uninterrupted."},
+
+  {q:"Which set of techniques did Griffith's films establish as the foundation of continuity?",
+   opts:["Jump cut, freeze frame, split screen and voice over",
+         "Establishing shot, shot reverse shot, matching eyelines, cutting on action and cross cutting",
+         "Fade, dissolve, wipe and iris",
+         "Close up, medium shot and long shot only"],
+   ans:1,
+   why:"Those five are the ones the lecture credits to Griffith. He also used close up, medium and long shots, and flashbacks, but the five above are what became the grammar of continuity."},
+
+  {q:"Montage editing is associated above all with which filmmaker and which film?",
+   opts:["Jean-Luc Godard and Breathless",
+         "D.W. Griffith and Intolerance",
+         "Sergei Eisenstein and Battleship Potemkin",
+         "Edwin S. Porter and The Great Train Robbery"],
+   ans:2,
+   why:"Montage emerged in the early twentieth century with Soviet filmmakers, and Eisenstein's Battleship Potemkin from 1925 is the classic example. Its Odessa Steps sequence uses quick cuts to intensify a violent scene."},
+
+  {q:"The French New Wave introduced the jump cut. What does a jump cut actually do?",
+   opts:["Cuts between two sequential shots of the same subject taken from slightly different camera positions",
+         "Cuts between two different locations happening at the same time",
+         "Cuts on a movement so the action carries across the join",
+         "Cuts the sound before the picture"],
+   ans:0,
+   why:"That is the definition given in the lecture. The French New Wave were French filmmakers working in the 1950s and 60s, and Godard's Breathless from 1960 is the standard example of jump cutting."},
+
+  {q:"Why does The Jazz Singer from 1927 matter to the history of editing?",
+   opts:["It was the first film to use cross cutting",
+         "It was the first feature length film with synchronised dialogue sequences",
+         "It was the first film edited on a Moviola",
+         "It was the first film to use a jump cut"],
+   ans:1,
+   why:"The Jazz Singer was the first feature length motion picture with synchronised dialogue. It launched the talkies and ended the silent era. Alan Crosland directed it for Warner Brothers using the Vitaphone sound on disc system, with Al Jolson performing six songs."}
 ];
 
 var TASKS = [
@@ -649,6 +898,7 @@ var state = {
   attemptId: "",
   startedAt: "",
   answers: TASKS.map(function(){ return {picked:null, checked:false, correct:false, just:""}; }),
+  part2: {idx:0, q: QUIZ.map(function(){ return {picked:null, checked:false, correct:false}; })},
   clipEnd: null,
   playing: false
 };
@@ -668,12 +918,48 @@ function shortTime(iso){
    ============================================================ */
 var Store = (function(){
   var KEY = "cutdetective.attempts.v1";
+  var URLKEY = "cutdetective.dburl";
   var memory = [];
-  var remote = (CONFIG.FIREBASE_DB_URL || "").replace(/\/+$/, "");
   var hasLocal = (function(){
     try { window.localStorage.setItem("__cd","1"); window.localStorage.removeItem("__cd"); return true; }
     catch(e){ return false; }
   })();
+
+  function tidy(u){ return String(u || "").trim().replace(/\/+$/, ""); }
+  function deviceUrl(){
+    if(!hasLocal) return "";
+    try { return tidy(window.localStorage.getItem(URLKEY) || ""); } catch(e){ return ""; }
+  }
+  function setDeviceUrl(u){
+    if(!hasLocal) return;
+    try {
+      if(u) window.localStorage.setItem(URLKEY, tidy(u));
+      else window.localStorage.removeItem(URLKEY);
+    } catch(e){}
+  }
+  /* The value in CONFIG wins, because that is the one every student loads.
+     The device value is a convenience for testing before you edit the file. */
+  function base(){ return tidy(CONFIG.FIREBASE_DB_URL) || deviceUrl(); }
+  var remote = base();
+
+  function refresh(){ remote = base(); return remote; }
+  function ping(u){
+    var target = tidy(u) || remote;
+    if(!target) return Promise.resolve({ok:false, reason:"No URL set."});
+    var probe = target + "/attempts/__connectiontest.json";
+    return fetch(probe, {
+      method:"PUT", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({at:new Date().toISOString()})
+    }).then(function(r){
+      if(!r.ok) return {ok:false, reason:"The database refused the write, HTTP " + r.status + ". Check the rules on the attempts node."};
+      return fetch(probe).then(function(r2){
+        if(!r2.ok) return {ok:false, reason:"Wrote but could not read back, HTTP " + r2.status + "."};
+        return fetch(probe, {method:"DELETE"}).then(function(){ return {ok:true, reason:"Wrote, read and deleted a test record."}; });
+      });
+    }).catch(function(){
+      return {ok:false, reason:"Could not reach that address. Check the URL and your connection."};
+    });
+  }
 
   function readLocal(){
     if(!hasLocal) return memory.slice();
@@ -720,7 +1006,38 @@ var Store = (function(){
     return fetch(remote + "/attempts/" + encodeURIComponent(attemptId) + ".json", {method:"DELETE"})
       .then(function(){ return true; }).catch(function(){ return false; });
   }
-  return {save:save, loadAll:loadAll, clearAll:clearAll, remove:remove, isRemote:function(){ return !!remote; }};
+  return {
+    save:save, loadAll:loadAll, clearAll:clearAll, remove:remove, ping:ping,
+    isRemote:function(){ return !!remote; },
+    url:function(){ return remote; },
+    fromConfig:function(){ return !!tidy(CONFIG.FIREBASE_DB_URL); },
+    setDeviceUrl:function(u){ setDeviceUrl(u); refresh(); },
+    deviceUrl:deviceUrl
+  };
+})();
+
+var FilmCfg = (function(){
+  var K = "cutdetective.film";
+  function dev(){
+    try { return JSON.parse(window.localStorage.getItem(K) || "null"); } catch(e){ return null; }
+  }
+  function setDev(o){
+    try {
+      if(o) window.localStorage.setItem(K, JSON.stringify(o));
+      else window.localStorage.removeItem(K);
+    } catch(e){}
+  }
+  function get(){
+    var d = dev();
+    return {
+      source:    (d && d.source) || CONFIG.FILM_SOURCE || "file",
+      youtubeId: (d && d.youtubeId) || CONFIG.FILM_YOUTUBE_ID || "",
+      file:      (d && d.file) || CONFIG.FILM_FILE || "",
+      offset:    (d && typeof d.offset === "number") ? d.offset : (CONFIG.FILM_OFFSET || 0),
+      fromDevice: !!d
+    };
+  }
+  return {get:get, setDev:setDev, dev:dev};
 })();
 
 function makeAttemptId(){ return "a" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -730,7 +1047,15 @@ function currentRecord(){
   return {
     attemptId: state.attemptId, name: state.name, hctId: state.id,
     startedAt: state.startedAt, updatedAt: new Date().toISOString(),
-    answered: done, total: TASKS.length, score: right, completed: done === TASKS.length,
+    answered: done, total: TASKS.length, score: right,
+    part2Done: quizDone(),
+    part2Checked: quizDone() === QUIZ.length,
+    part2Score: quizScore(),
+    part2Total: QUIZ.length,
+    part2Answers: state.part2.q.map(function(a, i){
+      return {q:i+1, picked:(a.picked === null ? "" : a.picked), correctAns:QUIZ[i].ans, correct:!!a.correct, checked:!!a.checked};
+    }),
+    completed: done === TASKS.length && quizDone() === QUIZ.length,
     answers: state.answers.map(function(a, i){
       return {q:i+1, timecode:tc(TASKS[i].t), picked:a.picked || "", correctAns:TASKS[i].ans,
               correct:!!a.correct, checked:!!a.checked, just:a.just || ""};
@@ -793,40 +1118,153 @@ $("btnStart").addEventListener("click", function(){
 validateGate(false);
 
 /* ============================================================
-   Film player, local file
+   Film player, streaming link or file in this repository
    ============================================================ */
-var film = $("film");
-var ready = false;
+var filmEl = $("film");
+var ytApiReady = false, ytPending = null;
 
-film.addEventListener("loadedmetadata", function(){
-  ready = true;
-  if(isFinite(film.duration) && film.duration > 60) DURATION = film.duration;
-  $("loadmsg").style.display = "none";
-});
-film.addEventListener("error", function(){
-  ready = false;
-  $("loadmsg").style.display = "flex";
-  $("loadmsg").textContent = "The film could not be loaded. Check that assets/videos/night-shift.mp4 is in place.";
-});
-film.addEventListener("play",  function(){ state.playing = true;  $("btnPlay").textContent = "Pause"; });
-film.addEventListener("pause", function(){ state.playing = false; $("btnPlay").textContent = "Play"; });
-film.addEventListener("seeked", paintTime);
-
-function nowT(){ return film.currentTime || 0; }
-function seek(t){
-  if(!ready) return;
-  film.currentTime = Math.max(0, Math.min(t, DURATION - 0.05));
+function onYouTubeIframeAPIReady(){
+  ytApiReady = true;
+  var f = ytPending; ytPending = null;
+  if(f) f();
 }
+function loadYtApi(cb){
+  if(ytApiReady && window.YT && window.YT.Player) return cb();
+  ytPending = cb;
+  if(!document.getElementById("ytapi")){
+    var t = document.createElement("script");
+    t.id = "ytapi";
+    t.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(t);
+  }
+}
+function loadMsg(text){
+  $("loadmsg").style.display = text ? "flex" : "none";
+  if(text) $("loadmsg").textContent = text;
+}
+
+var Film = {
+  mode:"", ready:false, offset:0, yt:null,
+
+  boot:function(){
+    var c = FilmCfg.get();
+    this.offset = c.offset || 0;
+    this.ready = false;
+    loadMsg("Loading the film.");
+    if(c.source === "file") this.useFile(c.file);
+    else this.useStream(c.youtubeId);
+  },
+
+  useFile:function(src){
+    this.mode = "file";
+    if(this.yt && this.yt.destroy){ this.yt.destroy(); this.yt = null; }
+    $("ytwrap").classList.add("hidden");
+    filmEl.classList.remove("hidden");
+    filmEl.src = src;
+    filmEl.load();
+  },
+
+  useStream:function(id){
+    var self = this;
+    this.mode = "stream";
+    try { filmEl.pause(); } catch(e){}
+    filmEl.removeAttribute("src");
+    filmEl.classList.add("hidden");
+    $("ytwrap").classList.remove("hidden");
+    if(!id){ loadMsg("No video ID is set for the streaming source."); return; }
+    loadYtApi(function(){
+      if(self.yt && self.yt.destroy) self.yt.destroy();
+      var host = document.createElement("div");
+      host.id = "ytplayer";
+      var old = $("ytplayer");
+      old.parentNode.replaceChild(host, old);
+      self.yt = new YT.Player("ytplayer", {
+        videoId: id,
+        playerVars: {rel:0, modestbranding:1, playsinline:1, cc_load_policy:0, iv_load_policy:3},
+        events: {
+          onReady:function(){
+            self.ready = true;
+            var d = self.yt.getDuration();
+            if(isFinite(d) && d > 60) DURATION = d;
+            loadMsg("");
+            if(typeof paintFilmPanel === "function") paintFilmPanel();
+          },
+          onStateChange:function(e){
+            state.playing = (e.data === 1);
+            $("btnPlay").textContent = state.playing ? "Pause" : "Play";
+          },
+          onError:function(){
+            self.ready = false;
+            loadMsg("That video would not load. Check the video ID under Film source in the dashboard.");
+          }
+        }
+      });
+    });
+  },
+
+  time:function(){
+    if(!this.ready) return 0;
+    var t = (this.mode === "stream") ? this.yt.getCurrentTime() : filmEl.currentTime;
+    return (t || 0) - this.offset;
+  },
+  seek:function(t){
+    if(!this.ready) return;
+    var target = Math.max(0, Math.min(t, DURATION - 0.05)) + this.offset;
+    if(this.mode === "stream") this.yt.seekTo(target, true);
+    else filmEl.currentTime = target;
+  },
+  play:function(){
+    if(!this.ready) return;
+    if(this.mode === "stream") this.yt.playVideo();
+    else { var p = filmEl.play(); if(p && p.catch) p.catch(function(){}); }
+  },
+  pause:function(){
+    if(!this.ready) return;
+    if(this.mode === "stream") this.yt.pauseVideo(); else filmEl.pause();
+  },
+  paused:function(){
+    if(!this.ready) return true;
+    return (this.mode === "stream") ? this.yt.getPlayerState() !== 1 : filmEl.paused;
+  },
+  getRate:function(){
+    if(!this.ready) return 1;
+    return (this.mode === "stream") ? this.yt.getPlaybackRate() : filmEl.playbackRate;
+  },
+  setRate:function(r){
+    if(!this.ready) return;
+    if(this.mode === "stream") this.yt.setPlaybackRate(r); else filmEl.playbackRate = r;
+  },
+  exact:function(){ return this.mode === "file"; }
+};
+
+filmEl.addEventListener("loadedmetadata", function(){
+  if(Film.mode !== "file") return;
+  Film.ready = true;
+  if(isFinite(filmEl.duration) && filmEl.duration > 60) DURATION = filmEl.duration;
+  loadMsg("");
+  if(typeof paintFilmPanel === "function") paintFilmPanel();
+});
+filmEl.addEventListener("error", function(){
+  if(Film.mode !== "file") return;
+  Film.ready = false;
+  loadMsg("The film file would not load. Check that " + FilmCfg.get().file + " is in place.");
+});
+filmEl.addEventListener("play",  function(){ if(Film.mode === "file"){ state.playing = true;  $("btnPlay").textContent = "Pause"; } });
+filmEl.addEventListener("pause", function(){ if(Film.mode === "file"){ state.playing = false; $("btnPlay").textContent = "Play"; } });
+filmEl.addEventListener("seeked", paintTime);
+
+function nowT(){ return Film.time(); }
+function seek(t){ Film.seek(t); }
 function paintTime(){
   var t = nowT();
   $("tcDisplay").textContent = tc(t);
   $("playhead").style.left = (Math.max(0, t) / DURATION * 100) + "%";
 }
 function frameLoop(){
-  if(ready){
+  if(Film.ready){
     paintTime();
     if(state.clipEnd !== null && nowT() >= state.clipEnd){
-      film.pause();
+      Film.pause();
       state.clipEnd = null;
     }
   }
@@ -835,18 +1273,18 @@ function frameLoop(){
 requestAnimationFrame(frameLoop);
 
 $("btnPlay").addEventListener("click", function(){
-  if(!ready) return;
+  if(!Film.ready) return;
   state.clipEnd = null;
-  if(film.paused) film.play(); else film.pause();
+  if(Film.paused()) Film.play(); else Film.pause();
 });
-$("btnBack1").addEventListener("click", function(){ if(ready){ film.pause(); seek(nowT() - 1/FPS); } });
-$("btnFwd1").addEventListener("click",  function(){ if(ready){ film.pause(); seek(nowT() + 1/FPS); } });
+$("btnBack1").addEventListener("click", function(){ if(Film.ready){ Film.pause(); seek(nowT() - 1/FPS); } });
+$("btnFwd1").addEventListener("click",  function(){ if(Film.ready){ Film.pause(); seek(nowT() + 1/FPS); } });
 $("btnBack5").addEventListener("click", function(){ seek(nowT() - 5); });
 $("btnFwd5").addEventListener("click",  function(){ seek(nowT() + 5); });
 $("btnSpeed").addEventListener("click", function(e){
-  if(!ready) return;
-  var slow = film.playbackRate !== 0.5;
-  film.playbackRate = slow ? 0.5 : 1;
+  if(!Film.ready) return;
+  var slow = Film.getRate() !== 0.5;
+  Film.setRate(slow ? 0.5 : 1);
   e.target.textContent = slow ? "Normal speed" : "Half speed";
 });
 
@@ -972,12 +1410,11 @@ function goTo(i){
   playClip();
 }
 function playClip(){
-  if(!ready) return;
+  if(!Film.ready) return;
   var task = TASKS[state.idx];
   state.clipEnd = task.outT;
-  film.currentTime = task.inT;
-  var p = film.play();
-  if(p && p.catch) p.catch(function(){});
+  Film.seek(task.inT);
+  Film.play();
 }
 
 function render(){
@@ -1049,7 +1486,7 @@ $("btnCheck").addEventListener("click", function(){
   render();
   pushRecord();
   if(state.answers.every(function(x){ return x.checked; })){
-    showView("results");
+    showView(quizDone() === QUIZ.length ? "results" : "quiz");
   } else {
     $("verdict").scrollIntoView({behavior:"smooth", block:"nearest"});
   }
@@ -1063,12 +1500,37 @@ $("btnPrev").addEventListener("click", function(){ goTo(state.idx - 1); });
 function renderResults(){
   var done = state.answers.filter(function(x){ return x.checked; }).length;
   var right = state.answers.filter(function(x){ return x.correct; }).length;
-  $("resBig").textContent = right + " / " + TASKS.length;
-  $("resTitle").textContent = done === TASKS.length ? "All questions answered" : "Your results so far";
-  $("resNote").textContent = done === TASKS.length
-    ? "Your work has been recorded for your instructor. Export the CSV if you were asked to hand one in, then return to the start screen so the next student can begin."
-    : (TASKS.length - done) + " questions still to answer.";
-  $("btnExport").disabled = done === 0;
+  var p2done = quizDone(), p2score = quizScore();
+  var grand = TASKS.length + QUIZ.length;
+
+  $("resBig").textContent = (right + p2score) + " / " + grand;
+  $("resSplit").textContent = "Part 1  " + right + " / " + TASKS.length +
+    "     Part 2  " + p2score + " / " + QUIZ.length;
+
+  var bothDone = done === TASKS.length && p2done === QUIZ.length;
+  $("resTitle").textContent = bothDone ? "Both parts finished" : "Your results so far";
+  if(bothDone){
+    $("resNote").textContent = "Your work has been recorded for your instructor. Export the CSV if you were asked to hand one in, then return to the start screen so the next student can begin.";
+  } else {
+    var bits = [];
+    if(done < TASKS.length) bits.push((TASKS.length - done) + " questions left in part 1");
+    if(p2done < QUIZ.length) bits.push((QUIZ.length - p2done) + " left in part 2");
+    $("resNote").textContent = bits.join(", ") + ".";
+  }
+  $("btnExport").disabled = done === 0 && p2done === 0;
+
+  var b2 = $("resBody2");
+  b2.innerHTML = "";
+  QUIZ.forEach(function(item, i){
+    var a = state.part2.q[i];
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="tcell">' + (i+1) + '</td>' +
+      '<td>' + esc(item.q) + '</td>' +
+      '<td>' + (a.checked ? (a.correct ? '<span class="pillok">Correct</span>' : '<span class="pillno">Incorrect</span>') : '<span class="pillwait">Open</span>') + '</td>' +
+      '<td>' + (a.picked === null ? '<span style="color:#5A6188">not answered</span>' : esc(LETTERS[a.picked] + ". " + item.opts[a.picked])) + '</td>';
+    b2.appendChild(tr);
+  });
 
   var body = $("resBody");
   body.innerHTML = "";
@@ -1115,12 +1577,130 @@ $("btnExport").addEventListener("click", function(){
     ]);
   });
   var right = state.answers.filter(function(x){ return x.correct; }).length;
-  rows.push([], ["Score", right + " out of " + TASKS.length]);
+  rows.push([], ["Part 2, history of editing quiz"], ["Question","Prompt","Student answer","Correct answer","Result"]);
+  QUIZ.forEach(function(item, i){
+    var a = state.part2.q[i];
+    rows.push([
+      i+1, item.q,
+      a.picked === null ? "" : LETTERS[a.picked] + ". " + item.opts[a.picked],
+      LETTERS[item.ans] + ". " + item.opts[item.ans],
+      a.checked ? (a.correct ? "Correct" : "Incorrect") : "Not answered"
+    ]);
+  });
+  var p2s = quizScore();
+  rows.push([], ["Part 1 score", right + " out of " + TASKS.length],
+                ["Part 2 score", p2s + " out of " + QUIZ.length],
+                ["Total", (right + p2s) + " out of " + (TASKS.length + QUIZ.length)]);
   downloadCsv("cut-detective-" + (state.id || "student").replace(/[^a-z0-9]+/gi,"-").toLowerCase() + ".csv", rows);
   pushRecord();
 });
 
 /* ============================================================
+   Part 2, ten question quiz on the history of editing
+   ============================================================ */
+var LETTERS = ["A","B","C","D","E","F"];
+
+function quizDone(){ return state.part2.q.filter(function(a){ return a.checked; }).length; }
+function quizScore(){ return state.part2.q.filter(function(a){ return a.correct; }).length; }
+
+function buildQuizStrip(){
+  var strip = $("quizStrip");
+  strip.innerHTML = "";
+  QUIZ.forEach(function(item, i){
+    var b = document.createElement("button");
+    b.className = "navdot";
+    b.dataset.i = i;
+    b.textContent = i + 1;
+    b.addEventListener("click", function(){ quizGoTo(i); });
+    strip.appendChild(b);
+  });
+}
+function quizGoTo(i){
+  state.part2.idx = Math.max(0, Math.min(i, QUIZ.length - 1));
+  showView("quiz");
+  renderQuiz();
+}
+function quizPick(o){
+  var a = state.part2.q[state.part2.idx];
+  if(a.checked) return;
+  a.picked = o;
+  renderQuiz();
+}
+
+function renderQuiz(){
+  var i = state.part2.idx, item = QUIZ[i], a = state.part2.q[i];
+
+  $("quizEyebrow").textContent = "Question " + (i+1) + " of " + QUIZ.length;
+  $("quizPrompt").textContent = item.q;
+  $("quizLocked").classList.toggle("hidden", !a.checked);
+
+  var box = $("quizOpts");
+  box.innerHTML = "";
+  item.opts.forEach(function(text, o){
+    var b = document.createElement("button");
+    b.className = "quizopt";
+    b.setAttribute("aria-pressed", String(a.picked === o));
+    b.disabled = a.checked;
+    b.innerHTML = '<span class="key">' + LETTERS[o] + '</span>' + esc(text);
+    if(a.checked){
+      if(o === item.ans) b.classList.add("right");
+      else if(o === a.picked) b.classList.add("wrong");
+    }
+    b.addEventListener("click", function(){ quizPick(o); });
+    box.appendChild(b);
+  });
+
+  $("btnQuizCheck").disabled = a.checked || a.picked === null;
+  $("btnQuizCheck").textContent = a.checked ? "Submitted" : "Submit answer";
+  $("btnQuizPrev").disabled = i === 0;
+  $("btnQuizNext").disabled = i === QUIZ.length - 1;
+
+  var v = $("quizVerdict");
+  if(a.checked){
+    v.classList.remove("hidden");
+    v.classList.toggle("miss", !a.correct);
+    $("quizVHead").textContent = a.correct
+      ? "Correct"
+      : "Not quite. The answer is " + LETTERS[item.ans] + ", " + item.opts[item.ans];
+    $("quizVBody").textContent = item.why;
+  } else {
+    v.classList.add("hidden");
+  }
+
+  var dots = $("quizStrip").querySelectorAll(".navdot");
+  for(var k=0;k<dots.length;k++){
+    var n = +dots[k].dataset.i, ans = state.part2.q[n];
+    dots[k].classList.toggle("current", n === i);
+    dots[k].classList.toggle("ok", ans.checked && ans.correct);
+    dots[k].classList.toggle("no", ans.checked && !ans.correct);
+  }
+
+  var done = quizDone();
+  $("quizPill").textContent = done < QUIZ.length
+    ? done + " of " + QUIZ.length + " answered"
+    : quizScore() + " / " + QUIZ.length + " correct";
+
+  renderResults();
+}
+
+$("btnQuizCheck").addEventListener("click", function(){
+  var a = state.part2.q[state.part2.idx];
+  if(a.checked || a.picked === null) return;
+  a.checked = true;
+  a.correct = (a.picked === QUIZ[state.part2.idx].ans);
+  renderQuiz();
+  pushRecord();
+  if(quizDone() === QUIZ.length && state.answers.every(function(x){ return x.checked; })){
+    showView("results");
+  } else {
+    $("quizVerdict").scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
+});
+$("btnQuizNext").addEventListener("click", function(){ quizGoTo(state.part2.idx + 1); });
+$("btnQuizPrev").addEventListener("click", function(){ quizGoTo(state.part2.idx - 1); });
+
+/* ============================================================
+   Finish and hand over to the next student/* ============================================================
    Finish and hand over to the next student
    ============================================================ */
 function resetStudent(){
@@ -1131,7 +1711,10 @@ function resetStudent(){
   state.startedAt = "";
   state.clipEnd = null;
   state.answers = TASKS.map(function(){ return {picked:null, checked:false, correct:false, just:""}; });
-  if(ready){ film.pause(); film.currentTime = 0; }
+  state.part2 = {idx:0, q: QUIZ.map(function(){ return {picked:null, checked:false, correct:false}; })};
+  renderQuiz();
+  Film.pause();
+  Film.seek(0);
   $("stuName").value = "";
   $("stuId").value = "";
   $("fName").classList.remove("err");
@@ -1147,8 +1730,10 @@ function resetStudent(){
 }
 $("btnFinish").addEventListener("click", function(){
   var done = state.answers.filter(function(x){ return x.checked; }).length;
-  if(done < TASKS.length){
-    if(!confirm("You have answered " + done + " of " + TASKS.length + " questions. Leaving now ends this attempt. Continue?")) return;
+  if(done < TASKS.length || quizDone() < QUIZ.length){
+    var msg = "You have answered " + done + " of " + TASKS.length + " in part 1 and " +
+              quizDone() + " of " + QUIZ.length + " in part 2";
+    if(!confirm(msg + ". Leaving now ends this attempt. Continue?")) return;
   }
   saveJust();
   pushRecord();
@@ -1159,7 +1744,7 @@ $("btnFinish").addEventListener("click", function(){
    Views
    ============================================================ */
 function showView(which){
-  var map = {activity:["viewActivity","navActivity"], reference:["viewRef","navRef"], results:["viewResults","navResults"]};
+  var map = {activity:["viewActivity","navActivity"], quiz:["viewQuiz","navQuiz"], reference:["viewRef","navRef"], results:["viewResults","navResults"]};
   Object.keys(map).forEach(function(k){
     var on = (k === which);
     $(map[k][0]).classList.toggle("hidden", !on);
@@ -1167,10 +1752,11 @@ function showView(which){
     else $(map[k][1]).removeAttribute("aria-current");
   });
   if(which !== "reference") pauseAllRefVideos();
-  if(which !== "activity" && ready) film.pause();
+  if(which !== "activity") Film.pause();
   window.scrollTo({top:0, behavior:"smooth"});
 }
 $("navActivity").addEventListener("click", function(){ showView("activity"); });
+$("navQuiz").addEventListener("click", function(){ showView("quiz"); });
 $("navRef").addEventListener("click", function(){ showView("reference"); });
 $("navResults").addEventListener("click", function(){ showView("results"); });
 
@@ -1211,16 +1797,122 @@ $("btnPin").addEventListener("click", function(){
   }
   $("pinScreen").classList.add("hidden");
   $("admin").classList.remove("hidden");
-  $("adminStore").textContent = Store.isRemote() ? "Shared class record" : "This device only";
-  var b = $("adminBanner");
-  if(Store.isRemote()){
-    b.classList.add("hidden");
-  } else {
-    b.classList.remove("hidden");
-    b.innerHTML = "<b>Device only mode.</b> No shared database is configured, so this dashboard shows attempts made on this computer and browser. To collect a whole class in one place, set FIREBASE_DB_URL near the top of the script block in index.html.";
-  }
+  paintFilmPanel();
+  paintDbPanel();
   loadAdmin();
   startAuto();
+});
+
+function ytIdFrom(v){
+  v = String(v || "").trim();
+  var m = v.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : v;
+}
+function paintFilmPanel(){
+  var c = FilmCfg.get();
+  var st = $("filmStatus"), txt = $("filmStatusText");
+  $("filmSource").value = (c.source === "file") ? "file" : "youtube";
+  $("filmId").value = c.youtubeId;
+  $("filmOffset").value = c.offset;
+  $("filmLines").textContent =
+    'FILM_SOURCE: "' + ((c.source === "file") ? "file" : "youtube") + '",\n' +
+    'FILM_YOUTUBE_ID: "' + c.youtubeId + '",\n' +
+    'FILM_OFFSET: ' + c.offset;
+
+  st.classList.remove("on","off");
+  if(!Film.ready){
+    st.classList.add("off");
+    txt.textContent = "The film has not loaded yet";
+  } else if(c.fromDevice){
+    st.classList.add("on");
+    txt.textContent = (c.source === "file" ? "Playing the bundled file" : "Streaming") +
+      ", set on this computer only, not yet saved into index.html";
+  } else {
+    st.classList.add("on");
+    txt.textContent = (c.source === "file" ? "Playing the bundled file" : "Streaming") +
+      ", set in index.html, this is what students get";
+  }
+}
+$("btnFilmUse").addEventListener("click", function(){
+  var src = $("filmSource").value;
+  var id = ytIdFrom($("filmId").value);
+  var off = parseFloat($("filmOffset").value);
+  if(!isFinite(off)) off = 0;
+  FilmCfg.setDev({source:src, youtubeId:id, file:CONFIG.FILM_FILE, offset:off});
+  Film.boot();
+  paintFilmPanel();
+  var m = $("filmMsg");
+  m.className = "dbmsg ok";
+  m.textContent = "Applied on this computer. Open the activity, play question 1, and check that the first cut lands at 01:18.9.";
+});
+$("btnFilmForget").addEventListener("click", function(){
+  FilmCfg.setDev(null);
+  Film.boot();
+  paintFilmPanel();
+  $("filmMsg").className = "dbmsg";
+  $("filmMsg").textContent = "Back to whatever index.html says.";
+});
+
+function dbLineSnippet(u){
+  return 'FIREBASE_DB_URL: "' + (u || "") + '"';
+}
+function paintDbPanel(){
+  var remote = Store.url();
+  var st = $("dbStatus"), txt = $("dbStatusText"), b = $("adminBanner");
+
+  $("adminStore").textContent = remote ? "Shared class record" : "This device only";
+  $("dbUrl").value = remote;
+  $("dbLine").textContent = dbLineSnippet(remote);
+
+  st.classList.remove("on","off");
+  if(!remote){
+    st.classList.add("off");
+    txt.textContent = "Not connected, attempts are being kept on this computer only";
+    b.classList.remove("hidden");
+    b.innerHTML = "<b>Device only mode.</b> This dashboard is showing attempts made on this computer and browser. Open Class database connection below to point the activity at a Firebase Realtime Database, and the whole class lands in one place.";
+  } else if(Store.fromConfig()){
+    st.classList.add("on");
+    txt.textContent = "Connected, set in index.html, every student writes here";
+    b.classList.add("hidden");
+  } else {
+    st.classList.add("on");
+    txt.textContent = "Connected on this computer only, not yet saved into index.html";
+    b.classList.remove("hidden");
+    b.innerHTML = "<b>Nearly there.</b> This computer is pointed at your database, but the published index.html is not. Copy the FIREBASE_DB_URL line from Class database connection into index.html and push it, or your students will still be saving to their own machines.";
+  }
+}
+
+$("btnDbTest").addEventListener("click", function(){
+  var u = $("dbUrl").value.trim();
+  var m = $("dbMsg");
+  m.className = "dbmsg";
+  m.textContent = "Testing.";
+  Store.ping(u).then(function(res){
+    m.className = "dbmsg " + (res.ok ? "ok" : "bad");
+    m.textContent = res.ok ? "Connection works. " + res.reason : "No connection. " + res.reason;
+    if(res.ok) $("dbLine").textContent = dbLineSnippet(u);
+  });
+});
+
+$("btnDbUse").addEventListener("click", function(){
+  var u = $("dbUrl").value.trim();
+  Store.setDeviceUrl(u);
+  paintDbPanel();
+  var m = $("dbMsg");
+  m.className = "dbmsg ok";
+  m.textContent = u
+    ? "This computer now reads and writes the shared database. Paste the line above into index.html to do the same for your students."
+    : "Cleared. This computer is back to device only mode.";
+  loadAdmin();
+});
+
+$("btnDbForget").addEventListener("click", function(){
+  Store.setDeviceUrl("");
+  $("dbUrl").value = "";
+  paintDbPanel();
+  $("dbMsg").className = "dbmsg";
+  $("dbMsg").textContent = "";
+  loadAdmin();
 });
 
 function startAuto(){
@@ -1257,7 +1949,7 @@ function renderAdmin(){
   var students = {}, done = 0, scoreSum = 0, scoreN = 0;
   admin.rows.forEach(function(r){
     students[String(r.hctId).toLowerCase()] = true;
-    if(r.completed){ done++; scoreSum += (r.score || 0); scoreN++; }
+    if(r.completed){ done++; scoreSum += (r.score || 0) + (r.part2Score || 0); scoreN++; }
   });
   $("stAttempts").textContent = admin.rows.length;
   $("stStudents").textContent = Object.keys(students).length;
@@ -1279,9 +1971,33 @@ function renderAdmin(){
   });
   $("stHard").textContent = worst >= 0 ? "Q" + (worst + 1) : ".";
 
+  var perQ2 = QUIZ.map(function(){ return {n:0, ok:0}; });
+  admin.rows.forEach(function(r){
+    (r.part2Answers || []).forEach(function(a, i){
+      if(a && a.checked && perQ2[i]){ perQ2[i].n++; if(a.correct) perQ2[i].ok++; }
+    });
+  });
+
   var bl = $("barList");
   bl.innerHTML = "";
+  var head1 = document.createElement("div");
+  head1.style.cssText = "margin:0 0 8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)";
+  head1.textContent = "Part 1, identify";
+  bl.appendChild(head1);
   perQ.forEach(function(p, i){
+    var pct = p.n ? Math.round(p.ok / p.n * 100) : 0;
+    var div = document.createElement("div");
+    div.className = "bar" + (p.n && pct < 50 ? " weak" : "");
+    div.innerHTML = '<div class="lab"><span>Q' + (i+1) + '</span><span>' +
+      (p.n ? pct + "% of " + p.n : "no data") + '</span></div>' +
+      '<div class="rail"><div class="fill" style="width:' + pct + '%"></div></div>';
+    bl.appendChild(div);
+  });
+  var head2 = document.createElement("div");
+  head2.style.cssText = "margin:16px 0 8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)";
+  head2.textContent = "Part 2, quiz";
+  bl.appendChild(head2);
+  perQ2.forEach(function(p, i){
     var pct = p.n ? Math.round(p.ok / p.n * 100) : 0;
     var div = document.createElement("div");
     div.className = "bar" + (p.n && pct < 50 ? " weak" : "");
@@ -1299,7 +2015,7 @@ function renderAdmin(){
   var body = $("adminBody");
   body.innerHTML = "";
   if(!rows.length){
-    body.innerHTML = '<tr><td colspan="9"><div class="emptynote">No attempts yet. As students work, their answers appear here.</div></td></tr>';
+    body.innerHTML = '<tr><td colspan="10"><div class="emptynote">No attempts yet. As students work, their answers appear here.</div></td></tr>';
     return;
   }
   rows.forEach(function(r){
@@ -1311,8 +2027,11 @@ function renderAdmin(){
       '<td class="tcell">' + (r._try || 1) + '</td>' +
       '<td class="tcell">' + shortTime(r.startedAt) + '</td>' +
       '<td class="tcell">' + shortTime(r.updatedAt) + '</td>' +
-      '<td class="tcell">' + (r.answered || 0) + ' / ' + (r.total || TASKS.length) + '</td>' +
-      '<td class="tcell"><b>' + (r.score || 0) + '</b></td>' +
+      '<td class="tcell">' + (r.score || 0) + ' / ' + (r.total || TASKS.length) +
+        ((r.answered || 0) < (r.total || TASKS.length) ? ' <span style="color:var(--muted)">(' + (r.answered || 0) + ' done)</span>' : '') + '</td>' +
+      '<td class="tcell">' + (r.part2Score || 0) + ' / ' + (r.part2Total || QUIZ.length) +
+        (((r.part2Done || 0) < (r.part2Total || QUIZ.length)) ? ' <span style="color:var(--muted)">(' + (r.part2Done || 0) + ' done)</span>' : '') + '</td>' +
+      '<td class="tcell"><b>' + ((r.score || 0) + (r.part2Score || 0)) + '</b></td>' +
       '<td>' + (r.completed ? '<span class="pillok">Finished</span>' : '<span class="pillwait">In progress</span>') + '</td>' +
       '<td><button class="rowdel" title="Delete this attempt">&#215;</button></td>';
     tr.addEventListener("click", function(){
@@ -1343,7 +2062,23 @@ function renderAdmin(){
                (a.checked && !a.correct ? '<span style="color:var(--muted)">answer: ' + esc(corrName) + '</span>' : '') +
                '</div>' + (a.just ? '<div class="qj">' + esc(a.just) + '</div>' : '') + '</div>';
       }).join("");
-      dt.innerHTML = '<td colspan="9"><div class="detailbox"><h4>' + esc(r.name) + ', attempt ' + (r._try || 1) + '</h4>' + lines + '</div></td>';
+      var p2lines = (r.part2Answers || []).map(function(a, i){
+        var item = QUIZ[i];
+        var pill = a.checked
+          ? (a.correct ? '<span class="pillok">Correct</span>' : '<span class="pillno">Incorrect</span>')
+          : '<span class="pillwait">Open</span>';
+        var picked = (a.picked === "" || a.picked === null || typeof a.picked === "undefined")
+          ? "not answered"
+          : (LETTERS[a.picked] + ". " + (item ? item.opts[a.picked] : ""));
+        return '<div class="qline"><div class="qtop"><span class="qn">Q' + (i+1) + '</span>' + pill +
+               '<span>' + esc(picked) + '</span></div>' +
+               '<div class="qj">' + esc(item ? item.q : "") + '</div></div>';
+      }).join("");
+      var p2head = '<h4 style="margin-top:14px">Part 2, quiz, ' +
+        (r.part2Score || 0) + ' of ' + (r.part2Total || QUIZ.length) +
+        ((r.part2Done || 0) < (r.part2Total || QUIZ.length) ? ', ' + (r.part2Done || 0) + ' answered' : '') + '</h4>';
+      dt.innerHTML = '<td colspan="10"><div class="detailbox"><h4>' + esc(r.name) + ', attempt ' + (r._try || 1) +
+        ', part 1</h4>' + lines + p2head + (p2lines || '<div class="qline">Nothing recorded for part 2 yet.</div>') + '</div></td>';
       body.appendChild(dt);
     }
   });
@@ -1354,18 +2089,32 @@ $("btnExportAll").addEventListener("click", function(){
     ["Cut Detective, class record"],
     ["Exported", new Date().toISOString().slice(0,19).replace("T"," "), "Attempts", admin.rows.length],
     [],
-    ["Student","HCT ID","Attempt","Started","Last activity","Answered","Score","Status","Question","Timecode","Student answer","Correct answer","Result","Student explanation"]
+    ["Student","HCT ID","Attempt","Started","Last activity","Part","Part 1 score","Part 2 score","Total","Status","Item","Timecode","Student answer","Correct answer","Result","Student explanation"]
   ];
   admin.rows.forEach(function(r){
+    var p2s = r.part2Checked ? (r.part2Score || 0) : 0;
+    var total = (r.score || 0) + p2s;
+    var status = r.completed ? "Finished" : "In progress";
     (r.answers || []).forEach(function(a, i){
       var pt = a.picked ? techById(a.picked) : null;
       var ct = techById(a.correctAns);
       rows.push([
-        r.name, r.hctId, r._try || 1, r.startedAt, r.updatedAt, r.answered, r.score,
-        r.completed ? "Finished" : "In progress",
+        r.name, r.hctId, r._try || 1, r.startedAt, r.updatedAt, "Part 1", r.score, p2s, total, status,
         i+1, a.timecode, pt ? pt.name : "", ct ? ct.name : a.correctAns,
         a.checked ? (a.correct ? "Correct" : "Incorrect") : "Not answered",
         a.just
+      ]);
+    });
+    (r.part2Answers || []).forEach(function(a, i){
+      var item = QUIZ[i];
+      var picked = (a.picked === "" || a.picked === null || typeof a.picked === "undefined")
+        ? "" : LETTERS[a.picked] + ". " + (item ? item.opts[a.picked] : "");
+      rows.push([
+        r.name, r.hctId, r._try || 1, r.startedAt, r.updatedAt, "Part 2", r.score, p2s, total, status,
+        i+1, "", picked,
+        item ? LETTERS[item.ans] + ". " + item.opts[item.ans] : "",
+        a.checked ? (a.correct ? "Correct" : "Incorrect") : "Not answered",
+        item ? item.q : ""
       ]);
     });
   });
@@ -1384,7 +2133,10 @@ buildRibbon();
 buildNavStrip();
 buildRef();
 buildChips();
+buildQuizStrip();
+renderQuiz();
 render();
+Film.boot();
 if(window.location.hash === "#instructor") openPin();
 </script>
 </body>
